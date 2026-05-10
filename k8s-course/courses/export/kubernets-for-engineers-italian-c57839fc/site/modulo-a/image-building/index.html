@@ -1,0 +1,3158 @@
+
+<!doctype html>
+<html lang="it" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Percorso intensivo di 8 incontri da 4 ore per team di ingegneria. Dai Linux namespaces e cgroups fino a GitOps, RBAC e architetture production-ready su Kubernetes.">
+      
+      
+        <meta name="author" content="Alessandro Segala">
+      
+      
+        <link rel="canonical" href="/modulo-a/image-building/">
+      
+      
+        <link rel="prev" href="../container-privilegiati/">
+      
+      
+        <link rel="next" href="../docker-internals/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.23">
+    
+    
+      
+        <title>Immagini Come Professionisti - Kubernetes per Ingegneri — Dal Container al Cluster</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.1e989742.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#immagini-come-professionisti" class="md-skip">
+          Vai al contenuto
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Intestazione">
+    <a href="../.." title="Kubernetes per Ingegneri — Dal Container al Cluster" class="md-header__button md-logo" aria-label="Kubernetes per Ingegneri — Dal Container al Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kubernetes per Ingegneri — Dal Container al Cluster
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Immagini Come Professionisti
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Passa al tema scuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Passa al tema scuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Passa al tema chiaro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Passa al tema chiaro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Cerca">
+  <button type="button" class="md-search__button">
+    Cerca
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigazione" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Kubernetes per Ingegneri — Dal Container al Cluster" class="md-nav__button md-logo" aria-label="Kubernetes per Ingegneri — Dal Container al Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    Kubernetes per Ingegneri — Dal Container al Cluster
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modulo A — Fondamenta dei Container
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modulo A — Fondamenta dei Container
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Panoramica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../primi-passi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primi Passi con Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../creare-app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creare e Containerizzare un'Applicazione
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lavorare-con-immagini/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lavorare con le Immagini
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../volumi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volumi e Dati Persistenti
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../networking-container/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking dei Container
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry dei Container
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../podman/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Podman: Alternativa a Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../container-privilegiati/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Container Privilegiati e Capabilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Immagini Come Professionisti
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Immagini Come Professionisti
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Indice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Indice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#obiettivi-dellincontro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Obiettivi dell'incontro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#teoria-50-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Teoria (50 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Teoria (50 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#anatomia-di-unimmagine-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anatomia di un'Immagine Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oci-image-specification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OCI Image Specification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#come-funziona-un-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Come Funziona un Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dockerfile-professionale-multi-stage-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dockerfile Professionale: Multi-Stage Builds
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dockerfile Professionale: Multi-Stage Builds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#il-problema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#la-soluzione-multi-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La Soluzione: Multi-Stage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-caching-in-profondita" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layer Caching in Profondità
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-file-dockerignore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il file .dockerignore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-problema-dei-secrets-nel-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Problema dei Secrets nel Build
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#base-images-scratch-distroless-alpine-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base Images: scratch, distroless, Alpine, Ubuntu
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Base Images: scratch, distroless, Alpine, Ubuntu">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#i-6-errori-di-from-scratch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        I 6 Errori di FROM scratch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utente-non-root-sicurezza-fondamentale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utente Non-Root: Sicurezza Fondamentale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#containerd-docker-daemon-e-cri-architettura-completa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        containerd, Docker Daemon e CRI: Architettura Completa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ctr-nerdctl-crictl-uso-pratico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ctr, nerdctl, crictl: Uso Pratico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ctr, nerdctl, crictl: Uso Pratico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ctr-containerd-basso-livello" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ctr — containerd basso livello
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nerdctl-docker-compatible-per-containerd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nerdctl — Docker-compatible per containerd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crictl-cri-tools-per-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        crictl — CRI tools per Kubernetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hands-on-guidato-90-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hands-on Guidato (90 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hands-on Guidato (90 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-1-ottimizzazione-immagine-go-da-800mb-a-5mb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 1 — Ottimizzazione Immagine Go: da 800MB a 5MB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-2-registry-locale-e-oci-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 2 — Registry Locale e OCI Inspection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-3-ctr-vs-nerdctl-vs-crictl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 3 — ctr vs nerdctl vs crictl
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-4-dockerfile-del-disastro-dockerfile-professionale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 4 — Dockerfile del Disastro → Dockerfile Professionale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-5-confronto-namespace-containerd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 5 — Confronto Namespace containerd
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capstone-challenge-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capstone Challenge (30 min)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riepilogo-concetti-chiave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riepilogo Concetti Chiave
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-study-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Study Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risorse-aggiuntive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risorse Aggiuntive
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Risorse Aggiuntive">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#specifiche-e-standard-ufficiali" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifiche e Standard Ufficiali
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blog-e-articoli-tecnici" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blog e Articoli Tecnici
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sicurezza-delle-immagini-e-supply-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sicurezza delle Immagini e Supply Chain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strumenti-e-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strumenti e Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formati-alternativi-di-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formati Alternativi di Build
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker-internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sotto il Cofano — Internals di Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modulo B — Kubernetes Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modulo B — Kubernetes Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Panoramica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/preparare-ambiente/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preparare l'Ambiente
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/esplorare-cluster/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Esplorare il Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/deploy-app-services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy e Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/k8s-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L'Architettura di Kubernetes: Da Zero a Pod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/workloads-config-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workload, Configurazione e Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/networking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking: DNS, Ingress e NetworkPolicy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modulo C — Cluster Reale e Production-Ready
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modulo C — Cluster Reale e Production-Ready
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Panoramica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-c/scheduling-rbac-security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduling, RBAC e Sicurezza
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-c/observability-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Osservabilità, Troubleshooting e Gestione del Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-c/gitops-helm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitOps, Helm e Architetture Cloud Provider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modulo D — Approfondimento
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modulo D — Approfondimento
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Panoramica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/container-internals-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Internals di Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/image-building-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Image Building
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/k8s-architecture-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Architettura Kubernetes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/workloads-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Workload e Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/networking-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Networking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/scheduling-rbac-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Scheduling, RBAC e Sicurezza
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/observability-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Osservabilità e Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/gitops-helm-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: GitOps e Helm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Indice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Indice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#obiettivi-dellincontro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Obiettivi dell'incontro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#teoria-50-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Teoria (50 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Teoria (50 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#anatomia-di-unimmagine-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anatomia di un'Immagine Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oci-image-specification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OCI Image Specification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#come-funziona-un-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Come Funziona un Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dockerfile-professionale-multi-stage-builds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dockerfile Professionale: Multi-Stage Builds
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dockerfile Professionale: Multi-Stage Builds">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#il-problema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Problema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#la-soluzione-multi-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La Soluzione: Multi-Stage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-caching-in-profondita" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layer Caching in Profondità
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-file-dockerignore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il file .dockerignore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-problema-dei-secrets-nel-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Problema dei Secrets nel Build
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#base-images-scratch-distroless-alpine-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base Images: scratch, distroless, Alpine, Ubuntu
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Base Images: scratch, distroless, Alpine, Ubuntu">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#i-6-errori-di-from-scratch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        I 6 Errori di FROM scratch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utente-non-root-sicurezza-fondamentale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utente Non-Root: Sicurezza Fondamentale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#containerd-docker-daemon-e-cri-architettura-completa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        containerd, Docker Daemon e CRI: Architettura Completa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ctr-nerdctl-crictl-uso-pratico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ctr, nerdctl, crictl: Uso Pratico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ctr, nerdctl, crictl: Uso Pratico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ctr-containerd-basso-livello" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ctr — containerd basso livello
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nerdctl-docker-compatible-per-containerd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nerdctl — Docker-compatible per containerd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crictl-cri-tools-per-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        crictl — CRI tools per Kubernetes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hands-on-guidato-90-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hands-on Guidato (90 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hands-on Guidato (90 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-1-ottimizzazione-immagine-go-da-800mb-a-5mb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 1 — Ottimizzazione Immagine Go: da 800MB a 5MB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-2-registry-locale-e-oci-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 2 — Registry Locale e OCI Inspection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-3-ctr-vs-nerdctl-vs-crictl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 3 — ctr vs nerdctl vs crictl
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-4-dockerfile-del-disastro-dockerfile-professionale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 4 — Dockerfile del Disastro → Dockerfile Professionale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-5-confronto-namespace-containerd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 5 — Confronto Namespace containerd
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capstone-challenge-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capstone Challenge (30 min)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riepilogo-concetti-chiave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riepilogo Concetti Chiave
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-study-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Study Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risorse-aggiuntive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risorse Aggiuntive
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Risorse Aggiuntive">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#specifiche-e-standard-ufficiali" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifiche e Standard Ufficiali
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blog-e-articoli-tecnici" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blog e Articoli Tecnici
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sicurezza-delle-immagini-e-supply-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sicurezza delle Immagini e Supply Chain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strumenti-e-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strumenti e Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formati-alternativi-di-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formati Alternativi di Build
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="immagini-come-professionisti">Immagini Come Professionisti<a class="headerlink" href="#immagini-come-professionisti" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Playground per questo incontro:</strong> usa il playground Docker su iximiuz Labs per seguire
+tutti gli esempi in modo interattivo:
+<strong>https://labs.iximiuz.com/playgrounds/docker</strong>
+— o il playground nerdctl per la parte containerd:
+<strong>https://labs.iximiuz.com/playgrounds/nerdctl</strong></p>
+</blockquote>
+<hr />
+<h2 id="obiettivi-dellincontro">Obiettivi dell'incontro<a class="headerlink" href="#obiettivi-dellincontro" title="Permanent link">&para;</a></h2>
+<p>Al termine di questo incontro i partecipanti saranno in grado di:</p>
+<ul>
+<li>Costruire immagini Docker ottimizzate con multi-stage build, distroless e utente non-root</li>
+<li>Spiegare la struttura interna di un'immagine OCI: manifest, layers, config</li>
+<li>Interagire con un registry privato via API REST e Docker CLI</li>
+<li>Distinguere Docker daemon, containerd e CRI — e usare <code>ctr</code>, <code>nerdctl</code>, <code>crictl</code></li>
+<li>Debuggare immagini rotte identificando dipendenze mancanti e problemi di layer</li>
+</ul>
+<hr />
+<h2 id="teoria-50-min">Teoria (50 min)<a class="headerlink" href="#teoria-50-min" title="Permanent link">&para;</a></h2>
+<h3 id="anatomia-di-unimmagine-container">Anatomia di un'Immagine Container<a class="headerlink" href="#anatomia-di-unimmagine-container" title="Permanent link">&para;</a></h3>
+<p>Prima di scrivere un Dockerfile, bisogna capire cosa c'è dentro un'immagine.</p>
+<p>Un'immagine container è un <strong>insieme ordinato di layer</strong> immutabili più un file di configurazione.
+Quando il container runtime crea un container, monta i layer in sola lettura via OverlayFS
+e aggiunge un layer scrivibile sopra.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker inspect ubuntu:22.04 --format &#39;{{json .RootFS}}&#39; | jq
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  &quot;Type&quot;: &quot;layers&quot;,
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  &quot;Layers&quot;: [
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    &quot;sha256:a1360aae5271...&quot;,   ← layer 1: base filesystem
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    &quot;sha256:e8c5906f8bde...&quot;,   ← layer 2: apt cache/index
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    &quot;sha256:3dbab57537...&quot;,     ← layer 3: package installs
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  ]
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>}
+</code></pre></div>
+<p>Ogni layer è un <strong>tar.gz delta</strong> che aggiunge, modifica o cancella file rispetto al layer precedente.
+I file cancellati vengono rappresentati con <strong>whiteout files</strong> (<code>.wh.filename</code>).</p>
+<h3 id="oci-image-specification">OCI Image Specification<a class="headerlink" href="#oci-image-specification" title="Permanent link">&para;</a></h3>
+<p>L'<a href="https://github.com/opencontainers/image-spec">OCI Image Specification</a> standardizza il formato
+delle immagini in modo che strumenti diversi (Docker, Podman, containerd, Buildah) possano
+usare le stesse immagini.</p>
+<p>Una immagine OCI è composta da tre artefatti:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Image Reference
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>└── OCI Image Index (manifest list, opzionale — per multi-arch)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    └── OCI Image Manifest
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        ├── Image Config  (JSON con Env, Cmd, Entrypoint, WorkDir, Labels...)
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        └── Layers[]      (tar.gz, identificati da SHA-256 digest)
+</code></pre></div>
+<p><strong>Image Manifest</strong> — il file JSON principale:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;schemaVersion&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;mediaType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">&quot;mediaType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/vnd.oci.image.config.v1+json&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">7023</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:b5b2b2c507...&quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">&quot;layers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">      </span><span class="nt">&quot;mediaType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">      </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">32654</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">      </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:9834876dcc...&quot;</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">      </span><span class="nt">&quot;mediaType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">      </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16724</span><span class="p">,</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">      </span><span class="nt">&quot;digest&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:3c3a4604a5...&quot;</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="p">}</span>
+</code></pre></div>
+<p>Esplorare un'immagine OCI direttamente:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Salva l&#39;immagine come tar e ispeziona la struttura OCI</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>docker<span class="w"> </span>save<span class="w"> </span>nginx:alpine<span class="w"> </span>-o<span class="w"> </span>nginx.tar
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>mkdir<span class="w"> </span>nginx-contents<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>tar<span class="w"> </span>xf<span class="w"> </span>nginx.tar<span class="w"> </span>-C<span class="w"> </span>nginx-contents
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>ls<span class="w"> </span>nginx-contents/
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># index.json  manifest.json  blobs/  oci-layout</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>cat<span class="w"> </span>nginx-contents/index.json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="c1"># → manifest digest SHA-256</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># Leggi il manifest</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>cat<span class="w"> </span>nginx-contents/blobs/sha256/&lt;digest-del-manifest&gt;<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="c1"># Leggi il config (env, cmd, history)</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>cat<span class="w"> </span>nginx-contents/blobs/sha256/&lt;digest-del-config&gt;<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.config&#39;</span>
+</code></pre></div>
+<h3 id="come-funziona-un-registry">Come Funziona un Registry<a class="headerlink" href="#come-funziona-un-registry" title="Permanent link">&para;</a></h3>
+<p>Un registry è una semplice <strong>API HTTP(S) RESTful</strong> definita dalla <a href="https://github.com/opencontainers/distribution-spec">OCI Distribution Spec</a>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># Flusso di un docker pull nginx:alpine
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>1. GET /v2/                                  # ping, verifica autenticazione
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>2. GET /v2/library/nginx/manifests/alpine    # scarica il manifest
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>3. GET /v2/library/nginx/blobs/&lt;digest&gt;      # scarica ogni layer (parallel)
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>4. GET /v2/library/nginx/blobs/&lt;config-digest&gt;  # scarica il config
+</code></pre></div>
+<p>Puoi interagire con il registry direttamente via curl:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Ottieni il token per Docker Hub</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;https://auth.docker.io/token?service=registry.docker.io&amp;scope=repository:library/nginx:pull&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.token<span class="k">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Scarica il manifest di nginx:alpine</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">     </span>-H<span class="w"> </span><span class="s2">&quot;Accept: application/vnd.oci.image.manifest.v1+json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">     </span>https://registry-1.docker.io/v2/library/nginx/manifests/alpine<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># Avvia un registry locale (senza autenticazione)</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>--name<span class="w"> </span>registry<span class="w"> </span>registry:2
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="c1"># Push di un&#39;immagine al registry locale</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>docker<span class="w"> </span>tag<span class="w"> </span>nginx:alpine<span class="w"> </span>localhost:5000/nginx:alpine
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>docker<span class="w"> </span>push<span class="w"> </span>localhost:5000/nginx:alpine
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="c1"># Verifica via API</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>curl<span class="w"> </span>http://localhost:5000/v2/_catalog<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>curl<span class="w"> </span>http://localhost:5000/v2/nginx/tags/list<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+</code></pre></div>
+<hr />
+<h3 id="dockerfile-professionale-multi-stage-builds">Dockerfile Professionale: Multi-Stage Builds<a class="headerlink" href="#dockerfile-professionale-multi-stage-builds" title="Permanent link">&para;</a></h3>
+<p>Un Dockerfile naif produce immagini grandi, lente da scaricare e con superficie d'attacco enorme.
+Il pattern multi-stage separa l'ambiente di build da quello di runtime.</p>
+<h4 id="il-problema">Il Problema<a class="headerlink" href="#il-problema" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c"># ❌ Dockerfile naif — include compilatore, sorgenti, cache nel layer finale</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">FROM</span><span class="w"> </span><span class="s">golang:1.22</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">RUN</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>myapp<span class="w"> </span>.
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c"># Dimensione finale: ~800MB (include tutto il toolchain Go)</span>
+</code></pre></div>
+<h4 id="la-soluzione-multi-stage">La Soluzione: Multi-Stage<a class="headerlink" href="#la-soluzione-multi-stage" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c"># ✅ Dockerfile ottimizzato — solo il binario nel layer finale</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c"># Stage 1: build environment</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="k">FROM</span><span class="w"> </span><span class="s">golang:1.22</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">builder</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c"># PRIMA copia i file di dipendenze (cambiano raramente → cache stabile)</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">COPY</span><span class="w"> </span>go.mod<span class="w"> </span>go.sum<span class="w"> </span>./
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">RUN</span><span class="w"> </span>go<span class="w"> </span>mod<span class="w"> </span>download
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c"># POI copia i sorgenti (cambiano spesso → invalida cache da qui in poi)</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="c"># CGO_ENABLED=0  → disabilita l&#39;interop C → binario staticamente linkato (no dipendenze libc)</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="c"># GOOS=linux     → target OS Linux, anche se si builda su macOS</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="c"># -trimpath      → rimuove i percorsi sorgente dal binario (build riproducibile, binario più piccolo)</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="c"># -ldflags=&quot;-w -s&quot; → rimuove debug info e symbol table (~30% riduzione dimensione)</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="k">RUN</span><span class="w"> </span><span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">GOOS</span><span class="o">=</span>linux<span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-trimpath<span class="w"> </span>-ldflags<span class="o">=</span><span class="s2">&quot;-w -s&quot;</span><span class="w"> </span>-o<span class="w"> </span>myapp<span class="w"> </span>.
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="c"># Stage 2: runtime environment minimale</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="k">FROM</span><span class="w"> </span><span class="s">gcr.io/distroless/static:nonroot</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>builder<span class="w"> </span>/app/myapp<span class="w"> </span>/myapp
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="k">USER</span><span class="w"> </span><span class="s">nonroot:nonroot</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/myapp&quot;</span><span class="p">]</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="c"># Dimensione finale: ~5MB (solo il binario staticamente linkato)</span>
+</code></pre></div>
+<p><strong>Confronto dimensioni:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>myapp:naive<span class="w"> </span>-f<span class="w"> </span>Dockerfile.naive<span class="w"> </span>.
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>myapp:optimized<span class="w"> </span>-f<span class="w"> </span>Dockerfile.optimized<span class="w"> </span>.
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>docker<span class="w"> </span>images<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>myapp
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># myapp   naive      abc123   800MB</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># myapp   optimized  def456   5.2MB</span>
+</code></pre></div>
+<h4 id="layer-caching-in-profondita">Layer Caching in Profondità<a class="headerlink" href="#layer-caching-in-profondita" title="Permanent link">&para;</a></h4>
+<p>Docker riusa i layer già presenti in cache se l'istruzione e il suo input non sono cambiati.
+L'invalidazione è <strong>a cascata</strong>: se un layer viene invalidato, tutti i layer successivi vengono ricostruiti.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Dockerfile          Quando si invalida la cache
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>──────────────     ──────────────────────────────
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>FROM golang:1.22    solo se l&#39;immagine base cambia
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>COPY go.mod .       se go.mod o go.sum cambiano
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>RUN go mod download se il layer precedente è invalidato
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>COPY . .            ad ogni modifica del sorgente  ← spostare qui
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>RUN go build ...    ad ogni COPY . . invalido
+</code></pre></div>
+<p><strong>Regola d'oro:</strong> istruzioni che cambiano raramente in alto, quelle che cambiano spesso in basso.</p>
+<h4 id="il-file-dockerignore">Il file <code>.dockerignore</code><a class="headerlink" href="#il-file-dockerignore" title="Permanent link">&para;</a></h4>
+<p>Senza un <code>.dockerignore</code>, Docker invia l'intero contenuto della directory al daemon come <strong>build context</strong> — inclusi <code>.git/</code>, <code>node_modules/</code>, file <code>.env</code> con segreti, e file di build pesanti. Questo rallenta la build e può includere accidentalmente dati sensibili nei layer.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a># .dockerignore — pattern esclude dal build context
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>.git/
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>.gitignore
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>*.env
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>.env.*
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>node_modules/
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>dist/
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>coverage/
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>*.log
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>Dockerfile*
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>docker-compose*
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>README.md
+</code></pre></div>
+<blockquote>
+<p><strong>Perché è importante:</strong> anche se un file non viene <code>COPY</code>-ato nel layer finale, il suo contenuto viaggia sulla rete socket <code>/var/run/docker.sock</code>. File grandi nel build context rallentano ogni <code>docker build</code>, anche se l'istruzione <code>COPY</code> li esclude.</p>
+</blockquote>
+<h4 id="il-problema-dei-secrets-nel-build">Il Problema dei Secrets nel Build<a class="headerlink" href="#il-problema-dei-secrets-nel-build" title="Permanent link">&para;</a></h4>
+<blockquote>
+<p><strong>BuildKit</strong> è il motore di build moderno di Docker (abilitato di default in Docker Desktop e Docker Engine 23+). La direttiva <code># syntax=docker/dockerfile:1</code> in cima al Dockerfile attiva le funzionalità avanzate di BuildKit come <code>--mount=type=secret</code>, <code>--mount=type=cache</code> e build multi-platform. Senza BuildKit queste istruzioni vengono ignorate o causano un errore.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c"># ❌ Il secret viene incluso nella storia del layer e non può essere rimosso!</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">RUN</span><span class="w"> </span>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer mysecret&quot;</span><span class="w"> </span>https://api.example.com/pkg.tar.gz<span class="w"> </span><span class="p">|</span><span class="w"> </span>tar<span class="w"> </span>xz
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c"># ✅ Usa BuildKit secrets — il file non entra mai nei layer</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c"># syntax=docker/dockerfile:1</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">RUN</span><span class="w"> </span>--mount<span class="o">=</span><span class="nv">type</span><span class="o">=</span>secret,id<span class="o">=</span>mytoken<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="k">$(</span>cat<span class="w"> </span>/run/secrets/mytoken<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span>https://api.example.com/pkg.tar.gz<span class="w"> </span><span class="p">|</span><span class="w"> </span>tar<span class="w"> </span>xz
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c"># Build con il secret</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>docker<span class="w"> </span>build<span class="w"> </span>--secret<span class="w"> </span><span class="nv">id</span><span class="o">=</span>mytoken,src<span class="o">=</span>./mytoken.txt<span class="w"> </span>.
+</code></pre></div>
+<hr />
+<h3 id="base-images-scratch-distroless-alpine-ubuntu">Base Images: scratch, distroless, Alpine, Ubuntu<a class="headerlink" href="#base-images-scratch-distroless-alpine-ubuntu" title="Permanent link">&para;</a></h3>
+<p>Scegliere la base image giusta è una decisione di sicurezza, non solo di dimensione.</p>
+<table>
+<thead>
+<tr>
+<th>Base Image</th>
+<th>Dimensione</th>
+<th>Shell</th>
+<th>Package manager</th>
+<th>Usata per</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scratch</code></td>
+<td>0 byte</td>
+<td>✗</td>
+<td>✗</td>
+<td>Binari statici (Go, Rust) senza nessuna dipendenza</td>
+</tr>
+<tr>
+<td><code>gcr.io/distroless/static</code></td>
+<td>~2MB</td>
+<td>✗</td>
+<td>✗</td>
+<td>Go, Rust statici</td>
+</tr>
+<tr>
+<td><code>gcr.io/distroless/base</code></td>
+<td>~20MB</td>
+<td>✗</td>
+<td>✗</td>
+<td>C/C++ dinamici, libc necessaria</td>
+</tr>
+<tr>
+<td><code>gcr.io/distroless/java17</code></td>
+<td>~200MB</td>
+<td>✗</td>
+<td>✗</td>
+<td>Java, solo JRE</td>
+</tr>
+<tr>
+<td><code>alpine:3.20</code></td>
+<td>~7MB</td>
+<td>ash</td>
+<td>apk</td>
+<td>Debug possibile, dipendenze musl</td>
+</tr>
+<tr>
+<td><code>debian:slim</code></td>
+<td>~75MB</td>
+<td>bash</td>
+<td>apt</td>
+<td>Compatibilità massima, glibc</td>
+</tr>
+<tr>
+<td><code>ubuntu:22.04</code></td>
+<td>~77MB</td>
+<td>bash</td>
+<td>apt</td>
+<td>Applicazioni legacy</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Alpine vs distroless — libc diversa:</strong>
+Alpine usa <strong>musl libc</strong> (leggera, non 100% compatibile con glibc). Le immagini <code>gcr.io/distroless/base</code> e <code>distroless/java</code> usano <strong>glibc</strong> (Debian).
+Per binari Go compilati staticamente (<code>CGO_ENABLED=0</code>) entrambe funzionano — non ci sono dipendenze libc.
+Per applicazioni C/C++, Java con JNI nativo, o librerie crittografiche (es. alcune versioni di OpenSSL), usa un'immagine glibc-based (distroless o debian:slim) per evitare problemi di compatibilità silenziosi.</p>
+</blockquote>
+<h4 id="i-6-errori-di-from-scratch">I 6 Errori di <code>FROM scratch</code><a class="headerlink" href="#i-6-errori-di-from-scratch" title="Permanent link">&para;</a></h4>
+<p>Usare <code>FROM scratch</code> sembra l'opzione più sicura, ma presenta trappole nascoste:</p>
+<ol>
+<li><strong>CA certificates mancanti</strong> — HTTPS fallisce senza <code>/etc/ssl/certs/ca-certificates.crt</code></li>
+<li><strong>Directory di sistema assenti</strong> — <code>/tmp</code>, <code>/var</code>, <code>/home</code> non esistono</li>
+<li><strong>User/group files mancanti</strong> — <code>/etc/passwd</code>, <code>/etc/group</code> assenti: <code>--user</code> non funziona</li>
+<li><strong>Timezone data assente</strong> — <code>/usr/share/zoneinfo/</code> mancante</li>
+<li><strong>Shared libraries assenti</strong> — binari dinamicamente linkati non partono senza <code>libc.so.6</code></li>
+<li><strong>Network config assente</strong> — <code>/etc/nsswitch.conf</code> mancante: DNS resolution può fallire</li>
+</ol>
+<p><strong>Soluzione:</strong> per la maggior parte dei casi, usare <code>distroless</code> invece di <code>scratch</code> —
+include CA certs, passwd/group, tzdata ma niente shell né package manager.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c"># Aggiunta manuale di CA certs se si usa scratch</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">FROM</span><span class="w"> </span><span class="s">alpine:3.20</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">certs</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">RUN</span><span class="w"> </span>apk<span class="w"> </span>add<span class="w"> </span>--no-cache<span class="w"> </span>ca-certificates
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="k">FROM</span><span class="w"> </span><span class="s">scratch</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>certs<span class="w"> </span>/etc/ssl/certs/ca-certificates.crt<span class="w"> </span>/etc/ssl/certs/
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>builder<span class="w"> </span>/app/myapp<span class="w"> </span>/myapp
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/myapp&quot;</span><span class="p">]</span>
+</code></pre></div>
+<hr />
+<h3 id="utente-non-root-sicurezza-fondamentale">Utente Non-Root: Sicurezza Fondamentale<a class="headerlink" href="#utente-non-root-sicurezza-fondamentale" title="Permanent link">&para;</a></h3>
+<p>I container che girano come <code>root</code> (UID 0) sono pericolosi: se il processo viene compromesso,
+l'attaccante ha accesso root al filesystem del container e, potenzialmente (con escape di namespace),
+al nodo host.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c"># ❌ Mai eseguire come root (default Dockerfile senza USER)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">FROM</span><span class="w"> </span><span class="s">ubuntu:22.04</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="k">RUN</span><span class="w"> </span>apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>myapp
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;myapp&quot;</span><span class="p">]</span><span class="w">  </span>#<span class="w"> </span>gira<span class="w"> </span>come<span class="w"> </span>root!
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c"># ✅ Crea un utente dedicato</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="k">FROM</span><span class="w"> </span><span class="s">debian:slim</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="k">RUN</span><span class="w"> </span>groupadd<span class="w"> </span>--gid<span class="w"> </span><span class="m">10001</span><span class="w"> </span>appgroup<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">    </span>useradd<span class="w"> </span>--uid<span class="w"> </span><span class="m">10001</span><span class="w"> </span>--gid<span class="w"> </span><span class="m">10001</span><span class="w"> </span>--no-create-home<span class="w"> </span>appuser
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="k">COPY</span><span class="w"> </span>myapp<span class="w"> </span>/usr/local/bin/myapp
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="k">USER</span><span class="w"> </span><span class="s">10001:10001</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;myapp&quot;</span><span class="p">]</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Verifica che il container non giri come root</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>myapp:secure<span class="w"> </span>id
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="c1"># uid=10001(appuser) gid=10001(appgroup)</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="c1"># Con distroless/nonroot, UID 65532 è predefinito</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>gcr.io/distroless/static:nonroot<span class="w"> </span>id
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># uid=65532(nonroot) gid=65532(nonroot)</span>
+</code></pre></div>
+<hr />
+<h3 id="containerd-docker-daemon-e-cri-architettura-completa">containerd, Docker Daemon e CRI: Architettura Completa<a class="headerlink" href="#containerd-docker-daemon-e-cri-architettura-completa" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>┌─────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>│                         USER SPACE                              │
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>│                                                                 │
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>│  kubectl  ──────────────────────────────────────► kube-apiserver│
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>│                                                        │        │
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>│  docker ──► Docker Daemon ──────────────────────────► │        │
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>│                                │                       │        │
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>│  nerdctl ───────────────────── ▼                       │        │
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>│                         containerd ◄────────── kubelet │        │
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>│                              │  (CRI gRPC plugin)      │        │
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>│  ctr ───────────────────► containerd API               │        │
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>│                              │                         │        │
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>│  crictl ─────────────────────┘ (via CRI socket)        │        │
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>│                              │                         │        │
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>│                           runc/kata/gvisor             │        │
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>│                              │                         │        │
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>│                         Container Processes            │        │
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>└──────────────────────────────────────────────────────────── ───┘
+</code></pre></div>
+<p><strong>Cosa fa ogni componente:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Parla con</th>
+<th>Scopo principale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docker</code> CLI</td>
+<td>Docker daemon</td>
+<td>Developer experience completa (network, volume, compose)</td>
+</tr>
+<tr>
+<td><code>dockerd</code></td>
+<td>containerd</td>
+<td>Aggiunge API Docker su containerd</td>
+</tr>
+<tr>
+<td><code>containerd</code></td>
+<td>runc/shim</td>
+<td>Image management, container lifecycle, snapshotter</td>
+</tr>
+<tr>
+<td><code>ctr</code></td>
+<td>containerd API</td>
+<td>Debug/admin di containerd a basso livello</td>
+</tr>
+<tr>
+<td><code>nerdctl</code></td>
+<td>containerd</td>
+<td>Alternativa Docker-compatible senza daemon Docker</td>
+</tr>
+<tr>
+<td><code>crictl</code></td>
+<td>CRI socket (<code>/run/containerd/containerd.sock</code>)</td>
+<td>Debug di container Kubernetes</td>
+</tr>
+<tr>
+<td><code>runc</code></td>
+<td>Linux kernel</td>
+<td>Esegue il container (namespaces, cgroups, pivot_root)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Namespace separati — store di immagini distinti:</strong></p>
+<p>containerd usa i <strong>namespace</strong> per separare le immagini dei vari client. Ogni tool vede solo le immagini nel proprio namespace:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Namespace containerd</th>
+<th>Vede le immagini Docker?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docker</code></td>
+<td><code>moby</code></td>
+<td>sì (il proprio store)</td>
+</tr>
+<tr>
+<td><code>nerdctl</code></td>
+<td><code>default</code></td>
+<td>no</td>
+</tr>
+<tr>
+<td><code>crictl</code></td>
+<td><code>k8s.io</code></td>
+<td>no (solo le immagini K8s)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Implicazione pratica:</strong> se fai <code>docker pull nginx</code> sull'host, un <code>ctr images list</code> nel namespace <code>default</code> restituisce lista vuota. Se vuoi vedere le immagini Docker con <code>ctr</code>, usa <code>ctr --namespace moby images list</code>.</p>
+</blockquote>
+<p><strong>Perché containerd è il runtime default di Kubernetes:</strong></p>
+<ul>
+<li>Kubernetes deprecò <code>dockershim</code> (il layer di compatibilità Docker-CRI) in K8s 1.20
+  e lo rimossero in 1.24</li>
+<li><code>containerd</code> implementa direttamente il <strong>CRI (Container Runtime Interface)</strong> via gRPC</li>
+<li>Più leggero di Docker: niente daemon con socket Unix aggiuntivo, meno processi</li>
+<li>Supporta <strong>snapshotter</strong> pluggabili: overlayfs (default), devmapper, zfs, btrfs</li>
+</ul>
+<hr />
+<h3 id="ctr-nerdctl-crictl-uso-pratico"><code>ctr</code>, <code>nerdctl</code>, <code>crictl</code>: Uso Pratico<a class="headerlink" href="#ctr-nerdctl-crictl-uso-pratico" title="Permanent link">&para;</a></h3>
+<h4 id="ctr-containerd-basso-livello"><code>ctr</code> — containerd basso livello<a class="headerlink" href="#ctr-containerd-basso-livello" title="Permanent link">&para;</a></h4>
+<p><code>ctr</code> è il CLI ufficiale di containerd. Verboso ma utile per capire l'architettura interna.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Namespace containerd: docker usa &quot;moby&quot;, k8s usa &quot;k8s.io&quot;</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>ctr<span class="w"> </span>namespaces<span class="w"> </span>list
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1"># Pull di un&#39;immagine (nel namespace default)</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>ctr<span class="w"> </span>images<span class="w"> </span>pull<span class="w"> </span>docker.io/library/nginx:alpine
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># Lista immagini</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>ctr<span class="w"> </span>images<span class="w"> </span>list
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="c1"># Monta un&#39;immagine per ispezionare il filesystem</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>mkdir<span class="w"> </span>/tmp/nginx-fs
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>ctr<span class="w"> </span>images<span class="w"> </span>mount<span class="w"> </span>docker.io/library/nginx:alpine<span class="w"> </span>/tmp/nginx-fs
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>ls<span class="w"> </span>/tmp/nginx-fs
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>ctr<span class="w"> </span>images<span class="w"> </span>unmount<span class="w"> </span>/tmp/nginx-fs
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="c1"># Esporta come OCI tarball</span>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>ctr<span class="w"> </span>images<span class="w"> </span><span class="nb">export</span><span class="w"> </span>nginx.tar<span class="w"> </span>docker.io/library/nginx:alpine
+</code></pre></div>
+<h4 id="nerdctl-docker-compatible-per-containerd"><code>nerdctl</code> — Docker-compatible per containerd<a class="headerlink" href="#nerdctl-docker-compatible-per-containerd" title="Permanent link">&para;</a></h4>
+<p><code>nerdctl</code> ha la stessa interfaccia di <code>docker</code> ma parla direttamente con containerd.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Identico a docker pull / run / build</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>nerdctl<span class="w"> </span>pull<span class="w"> </span>nginx:alpine
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>nerdctl<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:80<span class="w"> </span>--name<span class="w"> </span>webserver<span class="w"> </span>nginx:alpine
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>nerdctl<span class="w"> </span>ps
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>nerdctl<span class="w"> </span>logs<span class="w"> </span>webserver
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>nerdctl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>webserver<span class="w"> </span>sh
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>nerdctl<span class="w"> </span>stop<span class="w"> </span>webserver<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>nerdctl<span class="w"> </span>rm<span class="w"> </span>webserver
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="c1"># Build (usa BuildKit integrato)</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>nerdctl<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>myapp:v1<span class="w"> </span>.
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="c1"># Push a registry locale</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>nerdctl<span class="w"> </span>tag<span class="w"> </span>myapp:v1<span class="w"> </span>localhost:5000/myapp:v1
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>nerdctl<span class="w"> </span>push<span class="w"> </span>localhost:5000/myapp:v1<span class="w"> </span>--insecure-registry
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="c1"># Compose (nerdctl supporta docker-compose.yaml)</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>nerdctl<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+<h4 id="crictl-cri-tools-per-kubernetes"><code>crictl</code> — CRI tools per Kubernetes<a class="headerlink" href="#crictl-cri-tools-per-kubernetes" title="Permanent link">&para;</a></h4>
+<p><code>crictl</code> comunica con il CRI socket e mostra cosa Kubernetes "vede" realmente.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Configura il socket (su nodo Kubernetes)</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>cat<span class="w"> </span>&gt;<span class="w"> </span>/etc/crictl.yaml<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="s">runtime-endpoint: unix:///run/containerd/containerd.sock</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="s">image-endpoint: unix:///run/containerd/containerd.sock</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="s">EOF</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Lista container (come li vede kubelet, non Docker)</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>crictl<span class="w"> </span>ps
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="c1"># Lista immagini nel namespace k8s.io</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>crictl<span class="w"> </span>images
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="c1"># Pull di un&#39;immagine nel namespace k8s.io</span>
+<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>crictl<span class="w"> </span>pull<span class="w"> </span>nginx:alpine
+<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>
+<a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="c1"># Inspect di un container in esecuzione</span>
+<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>crictl<span class="w"> </span>inspect<span class="w"> </span>&lt;container-id&gt;
+<a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>
+<a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a><span class="c1"># Logs di un container Kubernetes</span>
+<a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a>crictl<span class="w"> </span>logs<span class="w"> </span>&lt;container-id&gt;
+<a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a>
+<a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a><span class="c1"># Stat delle risorse (CPU/RAM) di ogni container</span>
+<a id="__codelineno-19-23" name="__codelineno-19-23" href="#__codelineno-19-23"></a>crictl<span class="w"> </span>stats
+</code></pre></div>
+<hr />
+<h2 id="hands-on-guidato-90-min">Hands-on Guidato (90 min)<a class="headerlink" href="#hands-on-guidato-90-min" title="Permanent link">&para;</a></h2>
+<h3 id="esercizio-1-ottimizzazione-immagine-go-da-800mb-a-5mb">Esercizio 1 — Ottimizzazione Immagine Go: da 800MB a 5MB<a class="headerlink" href="#esercizio-1-ottimizzazione-immagine-go-da-800mb-a-5mb" title="Permanent link">&para;</a></h3>
+<p>Partiamo da un'applicazione Go con HTTP server e la ottimizziamo in 4 passi.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c"># server.go (applicazione di esempio)</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="c"># package main</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="c"># import (</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="c">#   &quot;fmt&quot;</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="c">#   &quot;net/http&quot;</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="c"># )</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="c"># func main() {</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="c">#   http.HandleFunc(&quot;/&quot;, func(w http.ResponseWriter, r *http.Request) {</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="c">#     fmt.Fprintln(w, &quot;Hello from container!&quot;)</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="c">#   })</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="c">#   http.ListenAndServe(&quot;:8080&quot;, nil)</span>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="c"># }</span>
+</code></pre></div>
+<p><strong>Passo 1 — Dockerfile naif:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">golang:1.22</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="k">RUN</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>server<span class="w"> </span>.
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="k">EXPOSE</span><span class="w"> </span><span class="s">8080</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;./server&quot;</span><span class="p">]</span>
+</code></pre></div></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>server:v1-naive<span class="w"> </span>.
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>docker<span class="w"> </span>images<span class="w"> </span>server:v1-naive<span class="w">  </span><span class="c1"># ~850MB</span>
+</code></pre></div>
+<p><strong>Passo 2 — Multi-stage:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">golang:1.22</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">builder</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="k">RUN</span><span class="w"> </span><span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>server<span class="w"> </span>.
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="k">FROM</span><span class="w"> </span><span class="s">debian:bookworm-slim</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>builder<span class="w"> </span>/app/server<span class="w"> </span>/server
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/server&quot;</span><span class="p">]</span>
+</code></pre></div></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>server:v2-multistage<span class="w"> </span>.
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>docker<span class="w"> </span>images<span class="w"> </span>server:v2-multistage<span class="w">  </span><span class="c1"># ~75MB</span>
+</code></pre></div>
+<p><strong>Passo 3 — distroless:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">golang:1.22</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">builder</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="k">RUN</span><span class="w"> </span><span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">GOOS</span><span class="o">=</span>linux<span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-trimpath<span class="w"> </span>-ldflags<span class="o">=</span><span class="s2">&quot;-w -s&quot;</span><span class="w"> </span>-o<span class="w"> </span>server<span class="w"> </span>.
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="k">FROM</span><span class="w"> </span><span class="s">gcr.io/distroless/static:nonroot</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>builder<span class="w"> </span>/app/server<span class="w"> </span>/server
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="k">USER</span><span class="w"> </span><span class="s">nonroot:nonroot</span>
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/server&quot;</span><span class="p">]</span>
+</code></pre></div></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>server:v3-distroless<span class="w"> </span>.
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>docker<span class="w"> </span>images<span class="w"> </span>server:v3-distroless<span class="w">  </span><span class="c1"># ~5MB</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># Verifica che non ci sia shell</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>server:v3-distroless<span class="w"> </span>sh<span class="w">  </span><span class="c1"># → exec failed: no such file</span>
+</code></pre></div>
+<p><strong>Passo 4 — Layer cache ottimizzata (aggiungere go.mod):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Modifica server.go e rebuilda — nota quanto è veloce la cache</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>touch<span class="w"> </span>server.go
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="nb">time</span><span class="w"> </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>server:v3-distroless<span class="w"> </span>.
+</code></pre></div></p>
+<h3 id="esercizio-2-registry-locale-e-oci-inspection">Esercizio 2 — Registry Locale e OCI Inspection<a class="headerlink" href="#esercizio-2-registry-locale-e-oci-inspection" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Avvia registry locale</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>--name<span class="w"> </span>registry<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">  </span>-v<span class="w"> </span>/tmp/registry-data:/var/lib/registry<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">  </span>registry:2
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="c1"># Push di più versioni</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>docker<span class="w"> </span>tag<span class="w"> </span>server:v3-distroless<span class="w"> </span>localhost:5000/server:v1
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>docker<span class="w"> </span>push<span class="w"> </span>localhost:5000/server:v1
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="c1"># Esplora via API REST (OCI Distribution Spec)</span>
+<a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="c1"># Lista repository</span>
+<a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a>curl<span class="w"> </span>http://localhost:5000/v2/_catalog<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="c1"># → {&quot;repositories&quot;:[&quot;server&quot;]}</span>
+<a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a>
+<a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a><span class="c1"># Lista tags</span>
+<a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a>curl<span class="w"> </span>http://localhost:5000/v2/server/tags/list<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a>
+<a id="__codelineno-28-18" name="__codelineno-28-18" href="#__codelineno-28-18"></a><span class="c1"># Scarica il manifest</span>
+<a id="__codelineno-28-19" name="__codelineno-28-19" href="#__codelineno-28-19"></a>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Accept: application/vnd.oci.image.manifest.v1+json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-20" name="__codelineno-28-20" href="#__codelineno-28-20"></a><span class="w">     </span>http://localhost:5000/v2/server/manifests/v1<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq
+<a id="__codelineno-28-21" name="__codelineno-28-21" href="#__codelineno-28-21"></a>
+<a id="__codelineno-28-22" name="__codelineno-28-22" href="#__codelineno-28-22"></a><span class="c1"># Calcola la dimensione totale dell&#39;immagine</span>
+<a id="__codelineno-28-23" name="__codelineno-28-23" href="#__codelineno-28-23"></a>curl<span class="w"> </span>-s<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Accept: application/vnd.oci.image.manifest.v1+json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-24" name="__codelineno-28-24" href="#__codelineno-28-24"></a><span class="w">     </span>http://localhost:5000/v2/server/manifests/v1<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-25" name="__codelineno-28-25" href="#__codelineno-28-25"></a><span class="w">  </span>jq<span class="w"> </span><span class="s1">&#39;[.layers[].size] | add&#39;</span>
+<a id="__codelineno-28-26" name="__codelineno-28-26" href="#__codelineno-28-26"></a>
+<a id="__codelineno-28-27" name="__codelineno-28-27" href="#__codelineno-28-27"></a><span class="c1"># Ispeziona un layer (scaricalo come tar.gz e vedi i file)</span>
+<a id="__codelineno-28-28" name="__codelineno-28-28" href="#__codelineno-28-28"></a><span class="nv">DIGEST</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Accept: application/vnd.oci.image.manifest.v1+json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-29" name="__codelineno-28-29" href="#__codelineno-28-29"></a><span class="w">         </span>http://localhost:5000/v2/server/manifests/v1<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.layers[0].digest&#39;</span><span class="k">)</span>
+<a id="__codelineno-28-30" name="__codelineno-28-30" href="#__codelineno-28-30"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:5000/v2/server/blobs/<span class="nv">$DIGEST</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tar<span class="w"> </span>tz<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-20
+</code></pre></div>
+<h3 id="esercizio-3-ctr-vs-nerdctl-vs-crictl">Esercizio 3 — <code>ctr</code> vs <code>nerdctl</code> vs <code>crictl</code><a class="headerlink" href="#esercizio-3-ctr-vs-nerdctl-vs-crictl" title="Permanent link">&para;</a></h3>
+<p>La stessa operazione con tre CLI diverse per capire la prospettiva di ognuna:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># ── DOCKER (su Docker Desktop o Docker Engine) ──────────────────────────────</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>docker<span class="w"> </span>pull<span class="w"> </span>nginx:alpine
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>docker<span class="w"> </span>images<span class="w"> </span>nginx
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>docker<span class="w"> </span>inspect<span class="w"> </span>nginx:alpine<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[0].RootFS.Layers | length&#39;</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="c1"># ── NERDCTL (containerd diretto) ──────────────────────────────────────────</span>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="c1"># Namespace di default (non &quot;moby&quot; come docker)</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>nerdctl<span class="w"> </span>--namespace<span class="w"> </span>default<span class="w"> </span>pull<span class="w"> </span>nginx:alpine
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>nerdctl<span class="w"> </span>--namespace<span class="w"> </span>default<span class="w"> </span>images
+<a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>
+<a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a><span class="c1"># Build con nerdctl (usa BuildKit)</span>
+<a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a>nerdctl<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>myapp:test<span class="w"> </span>.
+<a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a>
+<a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a><span class="c1"># ── CTR (containerd low-level) ─────────────────────────────────────────────</span>
+<a id="__codelineno-29-15" name="__codelineno-29-15" href="#__codelineno-29-15"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>default<span class="w"> </span>images<span class="w"> </span>pull<span class="w"> </span>docker.io/library/nginx:alpine
+<a id="__codelineno-29-16" name="__codelineno-29-16" href="#__codelineno-29-16"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>default<span class="w"> </span>images<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>nginx
+<a id="__codelineno-29-17" name="__codelineno-29-17" href="#__codelineno-29-17"></a>
+<a id="__codelineno-29-18" name="__codelineno-29-18" href="#__codelineno-29-18"></a><span class="c1"># Monta e ispeziona</span>
+<a id="__codelineno-29-19" name="__codelineno-29-19" href="#__codelineno-29-19"></a>mkdir<span class="w"> </span>/tmp/nginx-mnt
+<a id="__codelineno-29-20" name="__codelineno-29-20" href="#__codelineno-29-20"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>default<span class="w"> </span>images<span class="w"> </span>mount<span class="w"> </span>docker.io/library/nginx:alpine<span class="w"> </span>/tmp/nginx-mnt
+<a id="__codelineno-29-21" name="__codelineno-29-21" href="#__codelineno-29-21"></a>ls<span class="w"> </span>/tmp/nginx-mnt/etc/nginx/
+<a id="__codelineno-29-22" name="__codelineno-29-22" href="#__codelineno-29-22"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>default<span class="w"> </span>images<span class="w"> </span>unmount<span class="w"> </span>/tmp/nginx-mnt
+<a id="__codelineno-29-23" name="__codelineno-29-23" href="#__codelineno-29-23"></a>
+<a id="__codelineno-29-24" name="__codelineno-29-24" href="#__codelineno-29-24"></a><span class="c1"># ── CRICTL (vista Kubernetes sul CRI socket) ─────────────────────────────────</span>
+<a id="__codelineno-29-25" name="__codelineno-29-25" href="#__codelineno-29-25"></a><span class="c1"># Su un nodo Kubernetes:</span>
+<a id="__codelineno-29-26" name="__codelineno-29-26" href="#__codelineno-29-26"></a>crictl<span class="w"> </span>--runtime-endpoint<span class="w"> </span>unix:///run/containerd/containerd.sock<span class="w"> </span>images
+<a id="__codelineno-29-27" name="__codelineno-29-27" href="#__codelineno-29-27"></a>crictl<span class="w"> </span>pull<span class="w"> </span>nginx:alpine
+<a id="__codelineno-29-28" name="__codelineno-29-28" href="#__codelineno-29-28"></a>crictl<span class="w"> </span>images<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>nginx
+<a id="__codelineno-29-29" name="__codelineno-29-29" href="#__codelineno-29-29"></a>
+<a id="__codelineno-29-30" name="__codelineno-29-30" href="#__codelineno-29-30"></a><span class="c1"># Nota: crictl vede solo immagini nel namespace &quot;k8s.io&quot;</span>
+<a id="__codelineno-29-31" name="__codelineno-29-31" href="#__codelineno-29-31"></a><span class="c1"># docker/nerdctl vede namespace &quot;moby&quot;/&quot;default&quot;</span>
+<a id="__codelineno-29-32" name="__codelineno-29-32" href="#__codelineno-29-32"></a><span class="c1"># → sono store separati!</span>
+</code></pre></div>
+<h3 id="esercizio-4-dockerfile-del-disastro-dockerfile-professionale">Esercizio 4 — Dockerfile del Disastro → Dockerfile Professionale<a class="headerlink" href="#esercizio-4-dockerfile-del-disastro-dockerfile-professionale" title="Permanent link">&para;</a></h3>
+<p>Dato un Dockerfile problematico (Java), riscriverlo completamente:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c"># ❌ PRIMA: Dockerfile disastroso</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="k">FROM</span><span class="w"> </span><span class="s">maven:3.9-openjdk-17</span><span class="w">        </span><span class="c"># JDK intero (400MB) nel layer finale</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="k">RUN</span><span class="w"> </span>mvn<span class="w"> </span>clean<span class="w"> </span>package<span class="w">            </span>#<span class="w"> </span>artifact<span class="w"> </span>di<span class="w"> </span>build<span class="w"> </span>inclusi
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="k">ENV</span><span class="w"> </span><span class="nv">DB_PASSWORD</span><span class="o">=</span>supersecret123<span class="w">   </span><span class="c"># ❌ secret hardcodato in chiaro!</span>
+<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;java&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-jar&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;target/app.jar&quot;</span><span class="p">]</span>
+<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a><span class="c"># Corre come root, dimensione ~600MB</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c"># ✅ DOPO: Dockerfile professionale</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="c"># syntax=docker/dockerfile:1</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="c"># Stage 1: dipendenze Maven (cache separata)</span>
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="k">FROM</span><span class="w"> </span><span class="s">maven:3.9-eclipse-temurin-17</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">deps</span>
+<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="k">COPY</span><span class="w"> </span>pom.xml<span class="w"> </span>.
+<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="k">RUN</span><span class="w"> </span>mvn<span class="w"> </span>dependency:go-offline<span class="w"> </span>-B
+<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>
+<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="c"># Stage 2: build</span>
+<a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="k">FROM</span><span class="w"> </span><span class="s">deps</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">builder</span>
+<a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="k">COPY</span><span class="w"> </span>src/<span class="w"> </span>./src/
+<a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="k">RUN</span><span class="w"> </span>mvn<span class="w"> </span>clean<span class="w"> </span>package<span class="w"> </span>-DskipTests<span class="w"> </span>-B
+<a id="__codelineno-31-14" name="__codelineno-31-14" href="#__codelineno-31-14"></a>
+<a id="__codelineno-31-15" name="__codelineno-31-15" href="#__codelineno-31-15"></a><span class="c"># Stage 3: runtime minimale</span>
+<a id="__codelineno-31-16" name="__codelineno-31-16" href="#__codelineno-31-16"></a><span class="k">FROM</span><span class="w"> </span><span class="s">eclipse-temurin:17-jre-alpine</span>
+<a id="__codelineno-31-17" name="__codelineno-31-17" href="#__codelineno-31-17"></a><span class="k">RUN</span><span class="w"> </span>addgroup<span class="w"> </span>-g<span class="w"> </span><span class="m">10001</span><span class="w"> </span>appgroup<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-18" name="__codelineno-31-18" href="#__codelineno-31-18"></a><span class="w">    </span>adduser<span class="w"> </span>-u<span class="w"> </span><span class="m">10001</span><span class="w"> </span>-G<span class="w"> </span>appgroup<span class="w"> </span>-H<span class="w"> </span>-D<span class="w"> </span>appuser<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-19" name="__codelineno-31-19" href="#__codelineno-31-19"></a><span class="w">    </span>mkdir<span class="w"> </span>/app<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>chown<span class="w"> </span>appuser:appgroup<span class="w"> </span>/app
+<a id="__codelineno-31-20" name="__codelineno-31-20" href="#__codelineno-31-20"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<a id="__codelineno-31-21" name="__codelineno-31-21" href="#__codelineno-31-21"></a><span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>builder<span class="w"> </span>/app/target/app.jar<span class="w"> </span>app.jar
+<a id="__codelineno-31-22" name="__codelineno-31-22" href="#__codelineno-31-22"></a><span class="k">USER</span><span class="w"> </span><span class="s">10001:10001</span>
+<a id="__codelineno-31-23" name="__codelineno-31-23" href="#__codelineno-31-23"></a><span class="k">ENTRYPOINT</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;java&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-jar&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;app.jar&quot;</span><span class="p">]</span>
+<a id="__codelineno-31-24" name="__codelineno-31-24" href="#__codelineno-31-24"></a><span class="c"># DB_PASSWORD inviata via Secret Kubernetes, non nel Dockerfile!</span>
+<a id="__codelineno-31-25" name="__codelineno-31-25" href="#__codelineno-31-25"></a><span class="c"># Dimensione: ~180MB (solo JRE Alpine, niente Maven, niente sorgenti)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># Dimensioni a confronto</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>app:disaster<span class="w"> </span>-f<span class="w"> </span>Dockerfile.disaster<span class="w"> </span>.
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>app:professional<span class="w"> </span>-f<span class="w"> </span>Dockerfile.professional<span class="w"> </span>.
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>docker<span class="w"> </span>images<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>app
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>
+<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="c1"># Verifica non-root</span>
+<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>app:professional<span class="w"> </span>id
+<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="c1"># uid=10001(appuser) gid=10001(appgroup)</span>
+<a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>
+<a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="c1"># Verifica no shell in distroless (se hai usato distroless/java)</span>
+<a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>app:professional<span class="w"> </span>sh<span class="w">  </span><span class="c1"># → no such file</span>
+</code></pre></div>
+<h3 id="esercizio-5-confronto-namespace-containerd">Esercizio 5 — Confronto Namespace containerd<a class="headerlink" href="#esercizio-5-confronto-namespace-containerd" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c1"># Visualizza tutti i namespace di containerd</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>ctr<span class="w"> </span>namespaces<span class="w"> </span>list
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="c1"># NAME    LABELS</span>
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="c1"># default        ← nerdctl/ctr default</span>
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="c1"># moby           ← docker engine</span>
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="c1"># k8s.io         ← kubelet/crictl</span>
+<a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>
+<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="c1"># Ogni namespace ha il suo store di immagini separato</span>
+<a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>moby<span class="w"> </span>images<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w">    </span><span class="c1"># immagini Docker</span>
+<a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>k8s.io<span class="w"> </span>images<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w">  </span><span class="c1"># immagini Kubernetes</span>
+<a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>default<span class="w"> </span>images<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span><span class="c1"># immagini nerdctl/ctr</span>
+<a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a>
+<a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a><span class="c1"># Copia un&#39;immagine tra namespace</span>
+<a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>moby<span class="w"> </span>images<span class="w"> </span><span class="nb">export</span><span class="w"> </span>img.tar<span class="w"> </span>nginx:alpine
+<a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a>ctr<span class="w"> </span>--namespace<span class="w"> </span>k8s.io<span class="w"> </span>images<span class="w"> </span>import<span class="w"> </span>img.tar
+</code></pre></div>
+<hr />
+<h2 id="capstone-challenge-30-min">Capstone Challenge (30 min)<a class="headerlink" href="#capstone-challenge-30-min" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>"Il Dockerfile del Disastro"</strong></p>
+<p>Viene fornito un Dockerfile Node.js con i seguenti problemi:</p>
+<ol>
+<li><strong>Immagine finale 1.2GB+</strong>: usa <code>node:18</code> (include npm, yarn, Python, gcc) anche in produzione</li>
+<li><strong>Corre come root</strong>: nessun <code>USER</code></li>
+<li><strong>Build artifacts inclusi</strong>: <code>node_modules</code> di sviluppo (devDependencies) nel layer finale</li>
+<li><strong>Secret hardcodato</strong>: <code>ENV API_KEY=sk-prod-abc123</code> nel Dockerfile</li>
+<li><strong>Cache invalidata ad ogni push</strong>: <code>COPY . .</code> prima di <code>npm install</code></li>
+</ol>
+<p><strong>Obiettivo:</strong>
+- Immagine finale &lt; 100MB
+- Utente non-root (UID 1001)
+- Solo <code>node_modules</code> di produzione (<code>--omit=dev</code>)
+- Nessun secret nel Dockerfile (usare <code>--build-arg</code> o runtime env)
+- Cache ottimizzata: <code>COPY package*.json</code> prima di <code>npm ci</code></p>
+<p><strong>Verifica:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>nodeapp:challenge<span class="w"> </span>.
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>nodeapp:challenge<span class="w"> </span>id<span class="w">       </span><span class="c1"># uid=1001</span>
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>docker<span class="w"> </span>images<span class="w"> </span>nodeapp:challenge<span class="w">            </span><span class="c1"># &lt; 100MB</span>
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>docker<span class="w"> </span><span class="nb">history</span><span class="w"> </span>nodeapp:challenge<span class="w">           </span><span class="c1"># no API_KEY nella history!</span>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>nodeapp:challenge<span class="w"> </span>env<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>API_KEY<span class="w">  </span><span class="c1"># vuoto</span>
+</code></pre></div></p>
+</blockquote>
+<hr />
+<h2 id="riepilogo-concetti-chiave">Riepilogo Concetti Chiave<a class="headerlink" href="#riepilogo-concetti-chiave" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Concetto</th>
+<th>Cosa sapere</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OCI Image</strong></td>
+<td>manifest + config + layers (tar.gz SHA-256)</td>
+</tr>
+<tr>
+<td><strong>Layer cache</strong></td>
+<td>Invalida a cascata: metti <code>COPY sorgenti</code> il più in basso possibile</td>
+</tr>
+<tr>
+<td><strong>Multi-stage</strong></td>
+<td>Stage di build separato da stage di runtime con <code>COPY --from=</code></td>
+</tr>
+<tr>
+<td><strong>distroless</strong></td>
+<td>Niente shell, niente package manager: superficie d'attacco minima</td>
+</tr>
+<tr>
+<td><strong>Non-root</strong></td>
+<td><code>USER 10001</code> nel Dockerfile; <code>runAsNonRoot: true</code> in Kubernetes</td>
+</tr>
+<tr>
+<td><strong>BuildKit secrets</strong></td>
+<td><code>--mount=type=secret</code> per secrets non inclusi nei layer</td>
+</tr>
+<tr>
+<td><strong>containerd</strong></td>
+<td>Runtime di Kubernetes; ctr/nerdctl/crictl per gestirlo</td>
+</tr>
+<tr>
+<td><strong>Registry API</strong></td>
+<td>OCI Distribution Spec: <code>/v2/_catalog</code>, <code>/v2/&lt;name&gt;/manifests/&lt;ref&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="self-study-assignment">Self-Study Assignment<a class="headerlink" href="#self-study-assignment" title="Permanent link">&para;</a></h2>
+<p>Completa questi tutorial su iximiuz Labs prima del prossimo incontro (60–90 min totali):</p>
+<div class="admonition tip">
+<p class="admonition-title">Lab iximiuz</p>
+<p>Completa il tutorial: <strong>Docker Multi Stage Builds</strong></p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Lab iximiuz</p>
+<p>Completa il tutorial: <strong>Pitfalls Of From Scratch Images</strong></p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Lab iximiuz</p>
+<p>Completa il tutorial: <strong>Containerd Cli</strong></p>
+</div>
+<p>Completa anche il <strong>Skill Path "Build Container Images Like a Pro"</strong>:
+- https://labs.iximiuz.com/skill-paths/build-container-images</p>
+<p><strong>Letture consigliate:</strong>
+- <a href="https://github.com/opencontainers/image-spec">OCI Image Spec — opencontainers/image-spec</a>
+- <a href="https://github.com/opencontainers/distribution-spec">OCI Distribution Spec — API del registry</a>
+- <a href="https://github.com/GoogleContainerTools/distroless">Distroless images — GoogleContainerTools</a>
+- <a href="https://docs.docker.com/build/building/secrets/">BuildKit secrets documentation</a></p>
+<hr />
+<h2 id="risorse-aggiuntive">Risorse Aggiuntive<a class="headerlink" href="#risorse-aggiuntive" title="Permanent link">&para;</a></h2>
+<h3 id="specifiche-e-standard-ufficiali">Specifiche e Standard Ufficiali<a class="headerlink" href="#specifiche-e-standard-ufficiali" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/opencontainers/image-spec">OCI Image Specification</a> — spec completa del formato immagine OCI: manifest, config, layers, image index (multi-platform)</li>
+<li><a href="https://github.com/opencontainers/distribution-spec">OCI Distribution Specification</a> — API REST dei registry: push/pull, chunked upload, referrers API per attestazioni</li>
+<li><a href="https://docs.docker.com/build/">Docker Official Docs — Build</a> — BuildKit, Dockerfile reference, build cache, secrets, multi-platform builds</li>
+<li><a href="https://docs.docker.com/develop/develop-images/dockerfile_best-practices/">Docker Official Docs — Dockerfile Best Practices</a> — guida ufficiale: layer ordering, COPY vs ADD, multi-stage, .dockerignore</li>
+</ul>
+<h3 id="blog-e-articoli-tecnici">Blog e Articoli Tecnici<a class="headerlink" href="#blog-e-articoli-tecnici" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://iximiuz.com/en/posts/oci-image-and-runtime-specs/">Ivan Velichko — OCI Image and Runtime Specs (iximiuz.com)</a> — esplorazione delle spec OCI con comandi pratici e visualizzazioni</li>
+<li><a href="https://iximiuz.com/en/posts/container-layers/">Ivan Velichko — Exploring Container Image Layers (iximiuz.com)</a> — come funzionano i layer, union filesystem, copy-on-write</li>
+<li><a href="https://martinheinz.dev/blog/38">Martin Heinz — Every Container User Should Know About Distroless</a> — vantaggi, trade-off e debugging delle immagini distroless</li>
+<li><a href="https://martinheinz.dev/blog/42">Martin Heinz — Building Docker Images The Proper Way</a> — ottimizzazione del build process: cache, multi-stage, layer ordering</li>
+<li><a href="https://edu.chainguard.dev/">Chainguard Academy — Secure Container Images</a> — corso gratuito su immagini sicure, SBOM, firme digitali, zero-CVE images</li>
+</ul>
+<h3 id="sicurezza-delle-immagini-e-supply-chain">Sicurezza delle Immagini e Supply Chain<a class="headerlink" href="#sicurezza-delle-immagini-e-supply-chain" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://trivy.dev/">Trivy — Aqua Security</a> — scanner open source per vulnerabilità in immagini, filesystem, git repo, Kubernetes</li>
+<li><a href="https://github.com/anchore/grype">Grype — Anchore</a> — vulnerability scanner per immagini container e SBOM</li>
+<li><a href="https://github.com/anchore/syft">Syft — Anchore</a> — genera Software Bill of Materials (SBOM) da immagini container in formato SPDX, CycloneDX</li>
+<li><a href="https://docs.sigstore.dev/cosign/overview/">Cosign — Sigstore</a> — firma e verifica delle immagini container con chiavi keyless e Rekor transparency log</li>
+<li><a href="https://slsa.dev/">SLSA Framework</a> — Supply chain Levels for Software Artifacts: framework per la sicurezza della supply chain software</li>
+<li><a href="https://docs.docker.com/scout/">Docker Scout</a> — analisi delle vulnerabilità e policy integrata in Docker Desktop e Docker Hub</li>
+</ul>
+<h3 id="strumenti-e-repository">Strumenti e Repository<a class="headerlink" href="#strumenti-e-repository" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/moby/buildkit">moby/buildkit</a> — il backend di build di Docker: cache distribuita, multi-platform, secrets, SSH forwarding</li>
+<li><a href="https://github.com/GoogleContainerTools/distroless">GoogleContainerTools/distroless</a> — immagini distroless ufficiali di Google: static, base, cc, java, python, nodejs</li>
+<li><a href="https://github.com/chainguard-images">chainguard-images</a> — immagini minimali con CVE count zero, aggiornate quotidianamente, firmate con cosign</li>
+<li><a href="https://containerd.io/">containerd</a> — il runtime container di riferimento usato da Kubernetes, Docker, minikube, k3s</li>
+<li><a href="https://github.com/containerd/nerdctl">nerdctl</a> — Docker-compatible CLI per containerd con supporto BuildKit nativo e Compose</li>
+</ul>
+<h3 id="formati-alternativi-di-build">Formati Alternativi di Build<a class="headerlink" href="#formati-alternativi-di-build" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://buildpacks.io/">Buildpacks.io — Cloud Native Buildpacks</a> — costruisci immagini senza Dockerfile: rilevamento automatico del linguaggio, patch automatiche</li>
+<li><a href="https://ko.build/">ko — Build Go containers</a> — build di immagini Go senza Dockerfile, push diretto al registry, integrazione nativa con K8s</li>
+<li><a href="https://github.com/GoogleContainerTools/jib">Jib — Google</a> — build di immagini Java senza Docker daemon, plugin Maven/Gradle</li>
+<li><a href="https://github.com/GoogleContainerTools/kaniko">Kaniko — Google</a> — build di immagini Dockerfile all'interno di un container K8s, senza privilegi Docker</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Torna su
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["navigation.sections","navigation.expand","navigation.top","content.code.copy","content.code.annotate","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copiato","clipboard.copy":"Copia","search.result.more.one":"1 altro in questa pagina","search.result.more.other":"# altri in questa pagina","search.result.none":"Nessun documento trovato","search.result.one":"1 documento trovato","search.result.other":"# documenti trovati","search.result.placeholder":"Scrivi per iniziare a cercare","search.result.term.missing":"Non presente","select.version":"Seleziona la versione"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5fcf0de6.min.js"></script>
+      
+    
+  </body>
+</html>

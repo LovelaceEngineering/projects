@@ -1,0 +1,39 @@
+name: "Port Scan Detected"
+type: cardinality
+index: zeek-conn-*
+
+# Alert when a single source IP connects to more than 20 unique destination ports
+# within a 5-minute window — a strong indicator of port scanning.
+
+cardinality_field: "id.resp_p"
+max_cardinality: 20
+
+query_key: "id.orig_h"
+
+timeframe:
+  minutes: 5
+
+filter:
+  - term:
+      zeek_log_type: conn
+
+alert:
+  - debug
+
+alert_subject: "Port Scan Alert: {0} unique ports from {1}"
+alert_subject_args:
+  - cardinality_count
+  - id.orig_h
+
+alert_text: |
+  A potential port scan has been detected.
+
+  Source IP:          {0}
+  Unique dest ports:  {1}
+  Time window:        5 minutes
+  Threshold:          20 ports
+
+  Investigate this source IP for reconnaissance activity.
+alert_text_args:
+  - id.orig_h
+  - cardinality_count

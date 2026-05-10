@@ -1,0 +1,119 @@
+kind: playground
+name: kamaji-lab
+base: flexbox
+title: Kamaji Lab — Hosted Control Planes
+description: Un cluster k3s di management con Kamaji preinstallato, più due VM worker da unire a un TenantControlPlane.
+categories:
+  - kubernetes
+playground:
+  networks:
+    - name: local
+      subnet: 172.16.0.0/24
+  machines:
+    - name: mgmt-cp
+      users:
+        - name: root
+        - name: laborant
+          default: true
+      drives:
+        - source: oci://ghcr.io/ams0/iximiuz-kamaji/k3s-kamaji:v1@sha256:89f764334bd1e264f8ac5657a872504b822148a347f2290b40735185965cd80f
+          mount: /
+          size: 30GiB
+      network:
+        interfaces:
+          - network: local
+      resources:
+        cpuCount: 3
+        ramSize: 5GiB
+    - name: tenant-worker-01
+      users:
+        - name: root
+        - name: laborant
+          default: true
+      drives:
+        - source: oci://ghcr.io/iximiuz/labs/rootfs:ubuntu-24-04@sha256:300bc365e64cd0629d8b9abc83e87b82ed04336abad13562c7fb35e077c4693e
+          mount: /
+          size: 30GiB
+      network:
+        interfaces:
+          - network: local
+      resources:
+        cpuCount: 2
+        ramSize: 3GiB
+    - name: tenant-worker-02
+      users:
+        - name: root
+        - name: laborant
+          default: true
+      drives:
+        - source: oci://ghcr.io/iximiuz/labs/rootfs:ubuntu-24-04@sha256:300bc365e64cd0629d8b9abc83e87b82ed04336abad13562c7fb35e077c4693e
+          mount: /
+          size: 30GiB
+      network:
+        interfaces:
+          - network: local
+      resources:
+        cpuCount: 2
+        ramSize: 3GiB
+  tabs:
+    - id: terminal-mgmt-cp
+      kind: terminal
+      name: mgmt-cp
+      machine: mgmt-cp
+    - id: terminal-tenant-worker-01
+      kind: terminal
+      name: tenant-worker-01
+      machine: tenant-worker-01
+    - id: terminal-tenant-worker-02
+      kind: terminal
+      name: tenant-worker-02
+      machine: tenant-worker-02
+  initTasks:
+    init_install_worker_packages:
+      name: init_install_worker_packages
+      machine: tenant-worker-01
+      init: true
+      user: root
+      run: |
+        apt-get update
+        apt-get install -y apt-transport-https ca-certificates curl gpg containerd conntrack ethtool socat
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | \
+          gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' \
+          > /etc/apt/sources.list.d/kubernetes.list
+        apt-get update
+        apt-get install -y kubelet kubeadm kubectl
+        systemctl enable --now containerd
+        swapoff -a
+        modprobe br_netfilter
+        echo 'net.bridge.bridge-nf-call-iptables = 1' > /etc/sysctl.d/k8s.conf
+        echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.d/k8s.conf
+        sysctl --system
+
+    init_install_worker_packages_02:
+      name: init_install_worker_packages_02
+      machine: tenant-worker-02
+      init: true
+      user: root
+      run: |
+        apt-get update
+        apt-get install -y apt-transport-https ca-certificates curl gpg containerd conntrack ethtool socat
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | \
+          gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' \
+          > /etc/apt/sources.list.d/kubernetes.list
+        apt-get update
+        apt-get install -y kubelet kubeadm kubectl
+        systemctl enable --now containerd
+        swapoff -a
+        modprobe br_netfilter
+        echo 'net.bridge.bridge-nf-call-iptables = 1' > /etc/sysctl.d/k8s.conf
+        echo 'net.ipv4.ip_forward = 1' >> /etc/sysctl.d/k8s.conf
+        sysctl --system
+  accessControl:
+    canList:
+      - anyone
+    canRead:
+      - anyone
+    canStart:
+      - anyone

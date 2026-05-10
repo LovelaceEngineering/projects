@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.network-monitor.zeek</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/zeek</string>
+        <string>-i</string>
+        <string>en5</string>
+        <string>/Users/feynman/repos/network-monitor/zeek/local.zeek</string>
+        <string>LogAscii::use_json=T</string>
+        <string>Log::default_logdir=/Users/feynman/repos/network-monitor/data/zeek-logs</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/feynman/repos/network-monitor/data/zeek-logs</string>
+
+    <key>StandardOutPath</key>
+    <string>/Users/feynman/repos/network-monitor/data/zeek.stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/feynman/repos/network-monitor/data/zeek.stderr.log</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+</dict>
+</plist>

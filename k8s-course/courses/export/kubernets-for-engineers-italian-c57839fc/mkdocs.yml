@@ -1,0 +1,87 @@
+site_name: "Kubernetes per Ingegneri — Dal Container al Cluster"
+site_description: >-
+  Percorso intensivo di 8 incontri da 4 ore per team di ingegneria.
+  Dai Linux namespaces e cgroups fino a GitOps, RBAC e architetture production-ready su Kubernetes.
+site_author: Alessandro Segala
+site_url: ""
+
+theme:
+  name: material
+  language: it
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Passa al tema scuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Passa al tema chiaro
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - "Modulo A — Fondamenta dei Container":
+    - Panoramica: modulo-a/index.md
+    - Primi Passi con Docker: modulo-a/primi-passi.md
+    - Creare e Containerizzare un'Applicazione: modulo-a/creare-app.md
+    - Lavorare con le Immagini: modulo-a/lavorare-con-immagini.md
+    - Volumi e Dati Persistenti: modulo-a/volumi.md
+    - Networking dei Container: modulo-a/networking-container.md
+    - Registry dei Container: modulo-a/registry.md
+    - "Podman: Alternativa a Docker": modulo-a/podman.md
+    - Container Privilegiati e Capabilities: modulo-a/container-privilegiati.md
+    - Immagini Come Professionisti: modulo-a/image-building.md
+    - "Sotto il Cofano — Internals di Docker": modulo-a/docker-internals.md
+  - "Modulo B — Kubernetes Core":
+    - Panoramica: modulo-b/index.md
+    - "Preparare l'Ambiente": modulo-b/preparare-ambiente.md
+    - "Esplorare il Cluster": modulo-b/esplorare-cluster.md
+    - "Deploy e Services": modulo-b/deploy-app-services.md
+    - "L'Architettura di Kubernetes: Da Zero a Pod": modulo-b/k8s-architecture.md
+    - "Workload, Configurazione e Storage": modulo-b/workloads-config-storage.md
+    - "Networking: DNS, Ingress e NetworkPolicy": modulo-b/networking.md
+  - "Modulo C — Cluster Reale e Production-Ready":
+    - Panoramica: modulo-c/index.md
+    - "Scheduling, RBAC e Sicurezza": modulo-c/scheduling-rbac-security.md
+    - "Osservabilità, Troubleshooting e Gestione del Cluster": modulo-c/observability-troubleshooting.md
+    - "GitOps, Helm e Architetture Cloud Provider": modulo-c/gitops-helm.md
+  - "Modulo D — Approfondimento":
+    - Panoramica: modulo-d/index.md
+    - "Challenge: Internals di Docker": modulo-d/container-internals-challenges.md
+    - "Challenge: Image Building": modulo-d/image-building-challenges.md
+    - "Challenge: Architettura Kubernetes": modulo-d/k8s-architecture-challenges.md
+    - "Challenge: Workload e Storage": modulo-d/workloads-challenges.md
+    - "Challenge: Networking": modulo-d/networking-challenges.md
+    - "Challenge: Scheduling, RBAC e Sicurezza": modulo-d/scheduling-rbac-challenges.md
+    - "Challenge: Osservabilità e Troubleshooting": modulo-d/observability-challenges.md
+    - "Challenge: GitOps e Helm": modulo-d/gitops-helm-challenges.md

@@ -1,0 +1,64 @@
+{
+  "bots": [
+    {
+      "id": "btc-dca",
+      "enabled": true,
+      "pair": "BTC-EUR",
+      "base_order_size_eur": 50,
+      "safety_order_size_eur": 50,
+      "max_safety_orders": 5,
+      "safety_order_step_pct": 2.0,
+      "safety_order_volume_scale": 1.5,
+      "safety_order_step_scale": 1.2,
+      "take_profit_pct": 3.0,
+      "max_active_deals": 1,
+      "cooldown_seconds": 3600,
+      "entry_condition": {
+        "type": "rsi",
+        "timeframe": "ONE_HOUR",
+        "period": 14,
+        "threshold": 35
+      }
+    },
+    {
+      "id": "eth-dca",
+      "enabled": true,
+      "pair": "ETH-EUR",
+      "base_order_size_eur": 50,
+      "safety_order_size_eur": 50,
+      "max_safety_orders": 5,
+      "safety_order_step_pct": 2.0,
+      "safety_order_volume_scale": 1.5,
+      "safety_order_step_scale": 1.2,
+      "take_profit_pct": 3.0,
+      "max_active_deals": 1,
+      "cooldown_seconds": 3600,
+      "entry_condition": {
+        "type": "rsi",
+        "timeframe": "ONE_HOUR",
+        "period": 14,
+        "threshold": 35
+      }
+    },
+    {
+      "id": "sol-dca",
+      "enabled": true,
+      "pair": "SOL-EUR",
+      "base_order_size_eur": 25,
+      "safety_order_size_eur": 25,
+      "max_safety_orders": 5,
+      "safety_order_step_pct": 2.0,
+      "safety_order_volume_scale": 1.5,
+      "safety_order_step_scale": 1.2,
+      "take_profit_pct": 3.0,
+      "max_active_deals": 1,
+      "cooldown_seconds": 3600,
+      "entry_condition": {
+        "type": "rsi",
+        "timeframe": "ONE_HOUR",
+        "period": 14,
+        "threshold": 35
+      }
+    }
+  ]
+}

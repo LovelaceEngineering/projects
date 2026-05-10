@@ -1,0 +1,3 @@
+WARNING: This directory is for static assets referenced by the tutorial.
+Do not modify or remove files here unless you know what you're doing.
+Assets in __static__/ are served as-is by the iximiuz Labs platform.

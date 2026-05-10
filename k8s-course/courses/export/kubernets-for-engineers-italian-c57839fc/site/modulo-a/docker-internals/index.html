@@ -1,0 +1,3178 @@
+
+<!doctype html>
+<html lang="it" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Percorso intensivo di 8 incontri da 4 ore per team di ingegneria. Dai Linux namespaces e cgroups fino a GitOps, RBAC e architetture production-ready su Kubernetes.">
+      
+      
+        <meta name="author" content="Alessandro Segala">
+      
+      
+        <link rel="canonical" href="/modulo-a/docker-internals/">
+      
+      
+        <link rel="prev" href="../image-building/">
+      
+      
+        <link rel="next" href="../../modulo-b/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.23">
+    
+    
+      
+        <title>Sotto il Cofano — Internals di Docker - Kubernetes per Ingegneri — Dal Container al Cluster</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.1e989742.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sotto-il-cofano-internals-di-docker" class="md-skip">
+          Vai al contenuto
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Intestazione">
+    <a href="../.." title="Kubernetes per Ingegneri — Dal Container al Cluster" class="md-header__button md-logo" aria-label="Kubernetes per Ingegneri — Dal Container al Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kubernetes per Ingegneri — Dal Container al Cluster
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Sotto il Cofano — Internals di Docker
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Passa al tema scuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Passa al tema scuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Passa al tema chiaro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Passa al tema chiaro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Cerca">
+  <button type="button" class="md-search__button">
+    Cerca
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigazione" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Kubernetes per Ingegneri — Dal Container al Cluster" class="md-nav__button md-logo" aria-label="Kubernetes per Ingegneri — Dal Container al Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    Kubernetes per Ingegneri — Dal Container al Cluster
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modulo A — Fondamenta dei Container
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modulo A — Fondamenta dei Container
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Panoramica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../primi-passi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primi Passi con Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../creare-app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creare e Containerizzare un'Applicazione
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lavorare-con-immagini/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lavorare con le Immagini
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../volumi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volumi e Dati Persistenti
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../networking-container/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking dei Container
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry dei Container
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../podman/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Podman: Alternativa a Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../container-privilegiati/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Container Privilegiati e Capabilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../image-building/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Immagini Come Professionisti
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sotto il Cofano — Internals di Docker
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sotto il Cofano — Internals di Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Indice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Indice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#obiettivi-dellincontro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Obiettivi dell'incontro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#teoria-50-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Teoria (50 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Teoria (50 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#larchitettura-di-docker-dalla-cli-al-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        L'Architettura di Docker: dalla CLI al Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-namespaces-lillusione-dellisolamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux Namespaces: l'Illusione dell'Isolamento
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Linux Namespaces: l&#x27;Illusione dell&#x27;Isolamento">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ispezione-dei-namespace-di-un-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ispezione dei Namespace di un Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entrare-in-un-namespace-con-nsenter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entrare in un Namespace con nsenter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-namespace-pid-pid-1-nel-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Namespace PID: PID 1 nel Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-namespace-user-rootless-containers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Namespace User: Rootless Containers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cgroups-v2-limiti-di-risorse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cgroups v2: Limiti di Risorse
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cgroups v2: Limiti di Risorse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-risorse-controllabili" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Le Risorse Controllabili
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applicare-limiti-con-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Applicare Limiti con Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rilevare-un-oom-kill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rilevare un OOM Kill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificare-i-limiti-dallinterno-del-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificare i Limiti dall'interno del Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlayfs-il-filesystem-a-strati" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OverlayFS: Il Filesystem a Strati
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OverlayFS: Il Filesystem a Strati">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#il-concetto-di-union-mount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Concetto di Union Mount
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#come-docker-usa-overlayfs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Come Docker usa OverlayFS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copy-on-write-cow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copy-on-Write (CoW)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sharing-dei-layer-tra-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sharing dei Layer tra Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-networking-veth-bridge-e-nat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container Networking: veth, Bridge e NAT
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Container Networking: veth, Bridge e NAT">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#i-componenti" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        I Componenti
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reti-user-defined" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reti User-Defined
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-primitives-capabilities-e-seccomp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Primitives: Capabilities e Seccomp
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Primitives: Capabilities e Seccomp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linux-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccomp-filtro-syscall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Seccomp: Filtro Syscall
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hands-on-guidato-90-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hands-on Guidato (90 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hands-on Guidato (90 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-1-ispezione-namespace-di-un-container-live" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 1 — Ispezione Namespace di un Container Live
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-2-container-a-mano-con-unshare" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 2 — Container "a Mano" con unshare
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-3-esplorazione-overlayfs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 3 — Esplorazione OverlayFS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-4-oom-kill-con-cgroups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 4 — OOM Kill con cgroups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-5-network-namespace-manuale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 5 — Network Namespace Manuale
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capstone-challenge-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capstone Challenge (30 min)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riepilogo-concetti-chiave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riepilogo Concetti Chiave
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-study-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Study Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risorse-aggiuntive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risorse Aggiuntive
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Risorse Aggiuntive">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#specifiche-e-standard-ufficiali" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifiche e Standard Ufficiali
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blog-e-articoli-tecnici" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blog e Articoli Tecnici
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#video-fondamentali" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Video Fondamentali
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strumenti-e-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strumenti e Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approfondimenti-avanzati" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approfondimenti Avanzati
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modulo B — Kubernetes Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modulo B — Kubernetes Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Panoramica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/preparare-ambiente/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preparare l'Ambiente
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/esplorare-cluster/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Esplorare il Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/deploy-app-services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy e Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/k8s-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L'Architettura di Kubernetes: Da Zero a Pod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/workloads-config-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workload, Configurazione e Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-b/networking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking: DNS, Ingress e NetworkPolicy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modulo C — Cluster Reale e Production-Ready
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modulo C — Cluster Reale e Production-Ready
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Panoramica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-c/scheduling-rbac-security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scheduling, RBAC e Sicurezza
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-c/observability-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Osservabilità, Troubleshooting e Gestione del Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-c/gitops-helm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitOps, Helm e Architetture Cloud Provider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modulo D — Approfondimento
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modulo D — Approfondimento
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Panoramica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/container-internals-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Internals di Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/image-building-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Image Building
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/k8s-architecture-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Architettura Kubernetes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/workloads-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Workload e Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/networking-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Networking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/scheduling-rbac-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Scheduling, RBAC e Sicurezza
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/observability-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: Osservabilità e Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modulo-d/gitops-helm-challenges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge: GitOps e Helm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Indice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Indice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#obiettivi-dellincontro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Obiettivi dell'incontro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#teoria-50-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Teoria (50 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Teoria (50 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#larchitettura-di-docker-dalla-cli-al-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        L'Architettura di Docker: dalla CLI al Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-namespaces-lillusione-dellisolamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux Namespaces: l'Illusione dell'Isolamento
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Linux Namespaces: l&#x27;Illusione dell&#x27;Isolamento">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ispezione-dei-namespace-di-un-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ispezione dei Namespace di un Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entrare-in-un-namespace-con-nsenter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entrare in un Namespace con nsenter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-namespace-pid-pid-1-nel-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Namespace PID: PID 1 nel Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#il-namespace-user-rootless-containers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Namespace User: Rootless Containers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cgroups-v2-limiti-di-risorse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cgroups v2: Limiti di Risorse
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cgroups v2: Limiti di Risorse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-risorse-controllabili" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Le Risorse Controllabili
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applicare-limiti-con-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Applicare Limiti con Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rilevare-un-oom-kill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rilevare un OOM Kill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificare-i-limiti-dallinterno-del-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificare i Limiti dall'interno del Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlayfs-il-filesystem-a-strati" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OverlayFS: Il Filesystem a Strati
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OverlayFS: Il Filesystem a Strati">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#il-concetto-di-union-mount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Il Concetto di Union Mount
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#come-docker-usa-overlayfs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Come Docker usa OverlayFS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copy-on-write-cow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copy-on-Write (CoW)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sharing-dei-layer-tra-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sharing dei Layer tra Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-networking-veth-bridge-e-nat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container Networking: veth, Bridge e NAT
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Container Networking: veth, Bridge e NAT">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#i-componenti" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        I Componenti
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reti-user-defined" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reti User-Defined
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-primitives-capabilities-e-seccomp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Primitives: Capabilities e Seccomp
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Primitives: Capabilities e Seccomp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linux-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seccomp-filtro-syscall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Seccomp: Filtro Syscall
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hands-on-guidato-90-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hands-on Guidato (90 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hands-on Guidato (90 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-1-ispezione-namespace-di-un-container-live" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 1 — Ispezione Namespace di un Container Live
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-2-container-a-mano-con-unshare" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 2 — Container "a Mano" con unshare
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-3-esplorazione-overlayfs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 3 — Esplorazione OverlayFS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-4-oom-kill-con-cgroups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 4 — OOM Kill con cgroups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esercizio-5-network-namespace-manuale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Esercizio 5 — Network Namespace Manuale
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#capstone-challenge-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capstone Challenge (30 min)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riepilogo-concetti-chiave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riepilogo Concetti Chiave
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-study-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Study Assignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risorse-aggiuntive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risorse Aggiuntive
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Risorse Aggiuntive">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#specifiche-e-standard-ufficiali" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specifiche e Standard Ufficiali
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blog-e-articoli-tecnici" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blog e Articoli Tecnici
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#video-fondamentali" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Video Fondamentali
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strumenti-e-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strumenti e Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approfondimenti-avanzati" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approfondimenti Avanzati
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="sotto-il-cofano-internals-di-docker">Sotto il Cofano — Internals di Docker<a class="headerlink" href="#sotto-il-cofano-internals-di-docker" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Playground per questo incontro</strong></p>
+<p>Puoi seguire tutti gli esercizi di questo incontro in autonomia usando il playground Docker di iximiuz Labs:
+<a href="https://labs.iximiuz.com/playgrounds/docker">https://labs.iximiuz.com/playgrounds/docker</a></p>
+<p>Il playground ti fornisce un ambiente Linux con Docker pre-installato, pronto all'uso senza nessuna configurazione locale.</p>
+</blockquote>
+<h2 id="obiettivi-dellincontro">Obiettivi dell'incontro<a class="headerlink" href="#obiettivi-dellincontro" title="Permanent link">&para;</a></h2>
+<p>Al termine di questo incontro i partecipanti saranno in grado di:</p>
+<ul>
+<li>Descrivere la catena di esecuzione Docker (CLI → daemon → containerd → runc → kernel)</li>
+<li>Spiegare i 7 Linux namespaces e come Docker li usa per isolare i container</li>
+<li>Leggere le metriche cgroup v2 di un container in esecuzione e diagnosticare un OOM kill</li>
+<li>Navigare la struttura OverlayFS di un container e capire il copy-on-write</li>
+<li>Creare manualmente un network namespace con veth pair e capire come i container comunicano</li>
+<li>Applicare <code>nsenter</code> e <code>unshare</code> per entrare e creare namespace dal vivo</li>
+</ul>
+<hr />
+<h2 id="teoria-50-min">Teoria (50 min)<a class="headerlink" href="#teoria-50-min" title="Permanent link">&para;</a></h2>
+<h3 id="larchitettura-di-docker-dalla-cli-al-kernel">L'Architettura di Docker: dalla CLI al Kernel<a class="headerlink" href="#larchitettura-di-docker-dalla-cli-al-kernel" title="Permanent link">&para;</a></h3>
+<p>Quando esegui <code>docker run nginx</code>, dietro le quinte avviene una catena di deleghe:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker CLI
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    │  (REST over Unix socket: /var/run/docker.sock)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ▼
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>dockerd  (Docker daemon)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    │  (gRPC)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    ▼
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>containerd  (container lifecycle manager)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    │  (fork/exec via containerd-shim)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    ▼
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>runc  (OCI runtime)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    │  (syscalls al kernel)
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    ▼
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>Linux Kernel  (namespaces, cgroups, OverlayFS)
+</code></pre></div>
+<p><strong>Perché questa separazione?</strong></p>
+<ul>
+<li><strong>dockerd</strong> gestisce l'API, le immagini, i volumi e la rete</li>
+<li><strong>containerd</strong> gestisce il ciclo di vita dei container (start, stop, snapshot)</li>
+<li><strong>runc</strong> è il componente che <em>effettivamente</em> crea i namespace e applica i cgroup — è un binario piccolo e senza dipendenze</li>
+<li><strong>containerd-shim</strong> rimane in esecuzione anche dopo che <code>runc</code> esce, tenendo aperti gli stdin/stdout del container</li>
+</ul>
+<p>Questo design permette di aggiornare <code>dockerd</code> senza killare i container esistenti.</p>
+<blockquote>
+<p><strong>Curiosità:</strong> Kubernetes non usa il Docker daemon. Il kubelet parla direttamente con <strong>containerd</strong> via CRI (Container Runtime Interface). Il formato immagine Docker/OCI è però lo stesso: le immagini costruite con <code>docker build</code> funzionano in Kubernetes senza modifiche.</p>
+</blockquote>
+<p>Puoi verificare l'albero di processi mentre un container è in esecuzione:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span><span class="nb">test</span><span class="w"> </span>nginx
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># Trova il PID del container</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nv">CPID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.State.Pid}}&#39;</span><span class="w"> </span><span class="nb">test</span><span class="k">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Guarda l&#39;albero: containerd-shim → runc → nginx</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>pstree<span class="w"> </span>-p<span class="w"> </span><span class="nv">$CPID</span>
+</code></pre></div>
+<hr />
+<h3 id="linux-namespaces-lillusione-dellisolamento">Linux Namespaces: l'Illusione dell'Isolamento<a class="headerlink" href="#linux-namespaces-lillusione-dellisolamento" title="Permanent link">&para;</a></h3>
+<p>Un <strong>namespace</strong> è un wrapper del kernel attorno a una risorsa globale che fa sembrare al processo che vive al suo interno di avere la propria istanza privata di quella risorsa.</p>
+<p>Docker usa <strong>7 namespace</strong> (tutti creati con <code>clone(2)</code> al momento della creazione del container):</p>
+<table>
+<thead>
+<tr>
+<th>Namespace</th>
+<th>Flag <code>clone()</code></th>
+<th>Cosa isola</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mount (mnt)</strong></td>
+<td><code>CLONE_NEWNS</code></td>
+<td>Tabella dei mount point — ogni container ha il suo <code>/proc</code>, <code>/sys</code>, <code>/</code></td>
+</tr>
+<tr>
+<td><strong>Process ID (pid)</strong></td>
+<td><code>CLONE_NEWPID</code></td>
+<td>Albero dei PID — il processo init del container ha PID 1</td>
+</tr>
+<tr>
+<td><strong>Network (net)</strong></td>
+<td><code>CLONE_NEWNET</code></td>
+<td>Interfacce di rete, tabelle di routing, iptables, socket</td>
+</tr>
+<tr>
+<td><strong>IPC</strong></td>
+<td><code>CLONE_NEWIPC</code></td>
+<td>Code di messaggi System V, semafori condivisi, shared memory</td>
+</tr>
+<tr>
+<td><strong>UTS</strong></td>
+<td><code>CLONE_NEWUTS</code></td>
+<td>Hostname e NIS domainname</td>
+</tr>
+<tr>
+<td><strong>User</strong></td>
+<td><code>CLONE_NEWUSER</code></td>
+<td>UID/GID mapping — UID 0 nel container può mapparsi a UID 1000 sull'host</td>
+</tr>
+<tr>
+<td><strong>Cgroup</strong></td>
+<td><code>CLONE_NEWCGROUP</code></td>
+<td>Vista dell'albero cgroup — nasconde le configurazioni dell'host</td>
+</tr>
+</tbody>
+</table>
+<p>Le syscall fondamentali sono:
+- <code>clone(2)</code> — crea un nuovo processo in uno o più namespace nuovi
+- <code>unshare(2)</code> — sposta il processo corrente in nuovi namespace
+- <code>setns(2)</code> — entra in un namespace esistente (usato da <code>docker exec</code>)</p>
+<h4 id="ispezione-dei-namespace-di-un-container">Ispezione dei Namespace di un Container<a class="headerlink" href="#ispezione-dei-namespace-di-un-container" title="Permanent link">&para;</a></h4>
+<p>Ogni processo ha i propri namespace visibili in <code>/proc/&lt;pid&gt;/ns/</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Avvia un container</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>demo<span class="w"> </span>nginx
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Trova il PID del processo principale</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nv">CPID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.State.Pid}}&#39;</span><span class="w"> </span>demo<span class="k">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Visualizza i namespace del container</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>ls<span class="w"> </span>-la<span class="w"> </span>/proc/<span class="nv">$CPID</span>/ns/
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># lrwxrwxrwx cgroup -&gt; cgroup:[4026532456]</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="c1"># lrwxrwxrwx ipc -&gt; ipc:[4026532393]</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># lrwxrwxrwx mnt -&gt; mnt:[4026532391]</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># lrwxrwxrwx net -&gt; net:[4026532396]</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="c1"># lrwxrwxrwx pid -&gt; pid:[4026532394]</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="c1"># lrwxrwxrwx uts -&gt; uts:[4026532392]</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># Confronta con i namespace del processo host (PID 1)</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>ls<span class="w"> </span>-la<span class="w"> </span>/proc/1/ns/
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="c1"># I numeri inode sono diversi = namespace separati</span>
+</code></pre></div>
+<h4 id="entrare-in-un-namespace-con-nsenter">Entrare in un Namespace con <code>nsenter</code><a class="headerlink" href="#entrare-in-un-namespace-con-nsenter" title="Permanent link">&para;</a></h4>
+<p><code>docker exec</code> usa <code>setns()</code> per entrare nei namespace del container. Puoi fare la stessa cosa manualmente:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Entra in tutti i namespace del container dall&#39;host</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>sudo<span class="w"> </span>nsenter<span class="w"> </span>--target<span class="w"> </span><span class="nv">$CPID</span><span class="w"> </span>--mount<span class="w"> </span>--uts<span class="w"> </span>--ipc<span class="w"> </span>--net<span class="w"> </span>--pid
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Ora sei &quot;dentro&quot; il container (ma con i privilegi di root dell&#39;host)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>hostname<span class="w">          </span><span class="c1"># vedremo il nome del container</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>ip<span class="w"> </span>addr<span class="w">           </span><span class="c1"># solo le interfacce del container</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>ps<span class="w"> </span>aux<span class="w">            </span><span class="c1"># solo i processi del container</span>
+</code></pre></div>
+<h4 id="il-namespace-pid-pid-1-nel-container">Il Namespace PID: PID 1 nel Container<a class="headerlink" href="#il-namespace-pid-pid-1-nel-container" title="Permanent link">&para;</a></h4>
+<p>Dentro un container, il processo principale vede se stesso come PID 1:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>alpine<span class="w"> </span>ps<span class="w"> </span>aux
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1"># PID 1 è il processo principale</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Non ci sono altri processi visibili</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Ma dall&#39;host, ha un PID normale</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>pidtest<span class="w"> </span>sleep<span class="w"> </span><span class="m">3600</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.State.Pid}}&#39;</span><span class="w"> </span>pidtest
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1"># Es: 12345 — un PID normale nell&#39;albero dei processi dell&#39;host</span>
+</code></pre></div>
+<h4 id="il-namespace-user-rootless-containers">Il Namespace User: Rootless Containers<a class="headerlink" href="#il-namespace-user-rootless-containers" title="Permanent link">&para;</a></h4>
+<p>Il user namespace è il più potente: permette di mappare UID 0 (root) nel container a un UID non privilegiato sull'host. Questo è il fondamento dei <strong>rootless containers</strong>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Container con user namespace (rootless)</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--user<span class="w"> </span><span class="m">1000</span>:1000<span class="w"> </span>alpine<span class="w"> </span>id
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># uid=1000 gid=1000</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Verifica: il processo è non privilegiato sull&#39;host</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--user<span class="w"> </span><span class="m">1000</span>:1000<span class="w"> </span>--name<span class="w"> </span>unpriv<span class="w"> </span>nginx
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="nv">CPID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.State.Pid}}&#39;</span><span class="w"> </span>unpriv<span class="k">)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>cat<span class="w"> </span>/proc/<span class="nv">$CPID</span>/status<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s1">&#39;^Uid&#39;</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1"># Uid: 1000  1000  1000  1000  ← non root sull&#39;host</span>
+</code></pre></div>
+<hr />
+<h3 id="cgroups-v2-limiti-di-risorse">cgroups v2: Limiti di Risorse<a class="headerlink" href="#cgroups-v2-limiti-di-risorse" title="Permanent link">&para;</a></h3>
+<p>I <strong>control groups (cgroups)</strong> sono la tecnologia del kernel Linux che permette di limitare, misurare e isolare l'utilizzo di risorse (CPU, RAM, I/O, PID) di un insieme di processi.</p>
+<p>Docker usa <strong>cgroups v2</strong> (unified hierarchy) su versioni kernel moderne (≥ 5.0) e distribuzioni come Ubuntu 22.04+, RHEL 9+.</p>
+<blockquote>
+<p><strong>Come rilevare la versione cgroup attiva:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># &quot;tmpfs&quot; = cgroup v1, &quot;cgroup2fs&quot; = cgroup v2</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>stat<span class="w"> </span>-fc<span class="w"> </span>%T<span class="w"> </span>/sys/fs/cgroup/
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># oppure</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>mount<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>cgroup
+</code></pre></div></p>
+</blockquote>
+<p>Il filesystem di cgroup è montato su <code>/sys/fs/cgroup/</code>. Ogni container Docker ottiene un cgroup dedicato sotto:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>/sys/fs/cgroup/system.slice/docker-&lt;container-id&gt;.scope/
+</code></pre></div></p>
+<h4 id="le-risorse-controllabili">Le Risorse Controllabili<a class="headerlink" href="#le-risorse-controllabili" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>File cgroup</th>
+<th>Significato</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>memory.max</code></td>
+<td>Limite massimo di RAM in byte (<code>max</code> = illimitato)</td>
+</tr>
+<tr>
+<td><code>memory.current</code></td>
+<td>RAM attualmente usata</td>
+</tr>
+<tr>
+<td><code>memory.events</code></td>
+<td>Contatori OOM (oom_kill, oom)</td>
+</tr>
+<tr>
+<td><code>cpu.max</code></td>
+<td>Quota CPU: <code>&lt;quota_us&gt; &lt;period_us&gt;</code> — es. <code>100000 100000</code> = 1 core</td>
+</tr>
+<tr>
+<td><code>cpu.stat</code></td>
+<td>Statistiche CPU (usage_usec, throttled_usec)</td>
+</tr>
+<tr>
+<td><code>pids.max</code></td>
+<td>Numero massimo di processi (prevenzione fork bomb)</td>
+</tr>
+<tr>
+<td><code>io.max</code></td>
+<td>Limiti di I/O su disco per dispositivo</td>
+</tr>
+</tbody>
+</table>
+<h4 id="applicare-limiti-con-docker">Applicare Limiti con Docker<a class="headerlink" href="#applicare-limiti-con-docker" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Container con 256MB di RAM e 0.5 CPU</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>--memory<span class="o">=</span>256m<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span>--cpus<span class="o">=</span><span class="m">0</span>.5<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span>--pids-limit<span class="o">=</span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span>--name<span class="w"> </span>limited<span class="w"> </span>nginx
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="c1"># Verifica i valori nel filesystem cgroup</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="nv">CID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.Id}}&#39;</span><span class="w"> </span>limited<span class="k">)</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>cat<span class="w"> </span>/sys/fs/cgroup/system.slice/docker-<span class="si">${</span><span class="nv">CID</span><span class="si">}</span>.scope/memory.max
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="c1"># 268435456  (= 256 * 1024 * 1024)</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>cat<span class="w"> </span>/sys/fs/cgroup/system.slice/docker-<span class="si">${</span><span class="nv">CID</span><span class="si">}</span>.scope/cpu.max
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="c1"># 50000 100000  (= 50% di 1 core)</span>
+</code></pre></div>
+<h4 id="rilevare-un-oom-kill">Rilevare un OOM Kill<a class="headerlink" href="#rilevare-un-oom-kill" title="Permanent link">&para;</a></h4>
+<p>Quando un container supera il limite di memoria, il kernel Linux attiva l'<strong>OOM (Out-Of-Memory) killer</strong> che termina il processo.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Avvia un container con solo 10MB di RAM</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--memory<span class="o">=</span>10m<span class="w"> </span>--name<span class="w"> </span>oom-test<span class="w"> </span>nginx
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Forza un consumo eccessivo di memoria</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>oom-test<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat /dev/urandom | head -c 50m &gt; /dev/null&quot;</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># Il container crasha — controlla l&#39;evento</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>docker<span class="w"> </span>inspect<span class="w"> </span>oom-test<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[0].State&#39;</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="c1"># &quot;OOMKilled&quot;: true</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="c1"># Leggi i contatori OOM dal cgroup</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="nv">CID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.Id}}&#39;</span><span class="w"> </span>oom-test<span class="k">)</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>cat<span class="w"> </span>/sys/fs/cgroup/system.slice/docker-<span class="si">${</span><span class="nv">CID</span><span class="si">}</span>.scope/memory.events
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="c1"># oom 1</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="c1"># oom_kill 1</span>
+</code></pre></div>
+<h4 id="verificare-i-limiti-dallinterno-del-container">Verificare i Limiti dall'interno del Container<a class="headerlink" href="#verificare-i-limiti-dallinterno-del-container" title="Permanent link">&para;</a></h4>
+<p>Interessante: i container "vedono" il loro cgroup grazie al <strong>cgroup namespace</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--memory<span class="o">=</span>128m<span class="w"> </span>alpine<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat /sys/fs/cgroup/memory.max&quot;</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="c1"># 134217728  (= 128MB) — il container vede il proprio limite, non quello dell&#39;host</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Vista del container vs vista dell'host:</strong>
+Il percorso cgroup <strong>dentro il container</strong> è sempre <code>/sys/fs/cgroup/memory.max</code> (la radice del cgroup namespace del container).
+Dall'<strong>host</strong>, lo stesso cgroup si trova in <code>/sys/fs/cgroup/system.slice/docker-&lt;CID&gt;.scope/memory.max</code>.
+Entrambi mostrano lo stesso valore — sono due viste dello stesso oggetto kernel.</p>
+</blockquote>
+<hr />
+<h3 id="overlayfs-il-filesystem-a-strati">OverlayFS: Il Filesystem a Strati<a class="headerlink" href="#overlayfs-il-filesystem-a-strati" title="Permanent link">&para;</a></h3>
+<p>OverlayFS è il <strong>union filesystem</strong> usato da Docker come storage driver (<code>overlay2</code>). Permette di sovrapporre directory read-only con un layer read-write, creando una vista unificata.</p>
+<h4 id="il-concetto-di-union-mount">Il Concetto di Union Mount<a class="headerlink" href="#il-concetto-di-union-mount" title="Permanent link">&para;</a></h4>
+<p>L'idea fondamentale: più directory ("branch") vengono fuse in un'unica vista unificata. In caso di conflitto (stesso file in più layer), vince il layer più in alto.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>┌─────────────────────────────────┐
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>│  Container Layer (upperdir)     │  ← read-write, specifico del container
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>│  /etc/nginx/nginx.conf (modif.) │
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>├─────────────────────────────────┤
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>│  Image Layer 3 (lowerdir)       │  ← read-only
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>│  /etc/nginx/nginx.conf (orig.)  │
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>├─────────────────────────────────┤
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>│  Image Layer 2 (lowerdir)       │  ← read-only
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>│  /usr/bin/nginx                 │
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>├─────────────────────────────────┤
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>│  Image Layer 1 (lowerdir)       │  ← read-only (base image)
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>│  /lib, /bin, /etc, ...          │
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>└─────────────────────────────────┘
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>         ▼ merged view ▼
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>┌─────────────────────────────────┐
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>│        Container View           │
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>│  Tutto unificato — /etc, /usr,  │
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>│  /lib, con le modifiche del     │
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>│  container in cima              │
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>└─────────────────────────────────┘
+</code></pre></div>
+<h4 id="come-docker-usa-overlayfs">Come Docker usa OverlayFS<a class="headerlink" href="#come-docker-usa-overlayfs" title="Permanent link">&para;</a></h4>
+<p>Docker monta l'overlay con un comando simile a questo (semplificato):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>mount<span class="w"> </span>-t<span class="w"> </span>overlay<span class="w"> </span>overlay<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">lowerdir</span><span class="o">=</span>/layer3:/layer2:/layer1,<span class="se">\</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">     </span><span class="nv">upperdir</span><span class="o">=</span>/container-rw,<span class="se">\</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">     </span><span class="nv">workdir</span><span class="o">=</span>/container-work<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span>/container-merged
+</code></pre></div>
+<p>Le quattro directory rilevanti per ogni container:</p>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Ruolo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lowerdir</code></td>
+<td>Stack di layer read-only dell'immagine (separati da <code>:</code>)</td>
+</tr>
+<tr>
+<td><code>upperdir</code></td>
+<td>Layer read-write del container (le modifiche)</td>
+</tr>
+<tr>
+<td><code>workdir</code></td>
+<td>Directory di lavoro interna per operazioni atomiche</td>
+</tr>
+<tr>
+<td><code>merged</code></td>
+<td>Il filesystem che il container vede come <code>/</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="copy-on-write-cow">Copy-on-Write (CoW)<a class="headerlink" href="#copy-on-write-cow" title="Permanent link">&para;</a></h4>
+<p><strong>Prima scrittura</strong> su un file che esiste solo in <code>lowerdir</code>:
+1. Il file viene <strong>copiato</strong> da <code>lowerdir</code> a <code>upperdir</code>
+2. La modifica viene applicata alla copia in <code>upperdir</code>
+3. La vista <code>merged</code> mostra la versione modificata</p>
+<p><strong>Cancellazione</strong> di un file da <code>lowerdir</code>:
+- Viene creato un <strong>whiteout file</strong> in <code>upperdir</code> (un file speciale con modo <code>c 0 0</code>)
+- La vista <code>merged</code> non mostra più il file, ma il layer inferiore non viene toccato</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Ispeziona la struttura OverlayFS di un container</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>overlay-demo<span class="w"> </span>nginx
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="nv">CID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.Id}}&#39;</span><span class="w"> </span>overlay-demo<span class="k">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>docker<span class="w"> </span>inspect<span class="w"> </span>overlay-demo<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[0].GraphDriver.Data&#39;</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="c1"># {</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="c1">#   &quot;LowerDir&quot;: &quot;/var/lib/docker/overlay2/abc.../diff:...&quot;,</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="c1">#   &quot;MergedDir&quot;: &quot;/var/lib/docker/overlay2/xyz.../merged&quot;,</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="c1">#   &quot;UpperDir&quot;: &quot;/var/lib/docker/overlay2/xyz.../diff&quot;,</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="c1">#   &quot;WorkDir&quot;: &quot;/var/lib/docker/overlay2/xyz.../work&quot;</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="c1"># }</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="c1"># Modifica un file nel container</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>overlay-demo<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;hello&#39; &gt; /tmp/test.txt&quot;</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="c1"># Il file appare solo nell&#39;upperdir (layer del container)</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="nv">UPPER</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>overlay-demo<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[0].GraphDriver.Data.UpperDir&#39;</span><span class="k">)</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>ls<span class="w"> </span><span class="nv">$UPPER</span>/tmp/
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="c1"># test.txt  ← solo il layer del container lo contiene</span>
+</code></pre></div>
+<h4 id="sharing-dei-layer-tra-container">Sharing dei Layer tra Container<a class="headerlink" href="#sharing-dei-layer-tra-container" title="Permanent link">&para;</a></h4>
+<p>Più container che usano la stessa immagine base <strong>condividono i lowerdir</strong> — nessuna copia:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Avvia 5 container nginx</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">for</span><span class="w"> </span>i<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">$(</span>seq<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="m">5</span><span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>nginx<span class="nv">$i</span><span class="w"> </span>nginx<span class="p">;</span><span class="w"> </span><span class="k">done</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Tutti condividono gli stessi layer dell&#39;immagine</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>docker<span class="w"> </span>inspect<span class="w"> </span>nginx1<span class="w"> </span>nginx2<span class="w"> </span>nginx3<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[].GraphDriver.Data.LowerDir&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-5
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c1"># Stessi path! Solo UpperDir è diverso per ciascuno</span>
+</code></pre></div>
+<hr />
+<h3 id="container-networking-veth-bridge-e-nat">Container Networking: veth, Bridge e NAT<a class="headerlink" href="#container-networking-veth-bridge-e-nat" title="Permanent link">&para;</a></h3>
+<p>Quando Docker crea un container con la configurazione di rete di default (<code>--network bridge</code>), costruisce un piccolo stack di rete virtuale:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>Host Kernel
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>┌──────────────────────────────────────────────┐
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>│                                              │
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>│  docker0 bridge (172.17.0.1/16)             │
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>│       │                                      │
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>│  veth0 (host end) ─── veth1 (container end) │
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>│                              │               │
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>│                    Network Namespace         │
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>│                    del Container             │
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>│                    (eth0: 172.17.0.2)        │
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>│                                              │
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>│  iptables: SNAT per outbound traffic         │
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>│  iptables: DNAT per port mapping (-p 80:80)  │
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>└──────────────────────────────────────────────┘
+</code></pre></div>
+<h4 id="i-componenti">I Componenti<a class="headerlink" href="#i-componenti" title="Permanent link">&para;</a></h4>
+<p><strong>docker0 bridge</strong>: Un'interfaccia di rete virtuale sull'host, funziona come uno switch Layer 2. Tutti i container connessi alla rete bridge di default sono "collegati" a questo bridge.</p>
+<p><strong>veth pair</strong>: Una coppia di interfacce di rete virtuali collegate come un tubo — quello che entra da un lato esce dall'altro. Docker crea una coppia per ogni container:
+- Un'estremità rimane nel <strong>network namespace dell'host</strong> (appare come <code>vethXXXXXX</code> con <code>ip link</code>)
+- L'altra estremità va nel <strong>network namespace del container</strong> (appare come <code>eth0</code>)</p>
+<p><strong>iptables</strong>: Docker gestisce automaticamente regole iptables per:
+- <strong>NAT/MASQUERADE</strong>: i container usano l'IP dell'host per accedere a internet
+- <strong>DNAT</strong>: il port mapping <code>-p 8080:80</code> traduce le connessioni in arrivo verso il container</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Ispeziona la configurazione di rete di un container</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>netdemo<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:80<span class="w"> </span>nginx
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Vedi le regole iptables create da Docker</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>sudo<span class="w"> </span>iptables<span class="w"> </span>-t<span class="w"> </span>nat<span class="w"> </span>-L<span class="w"> </span>-n<span class="w"> </span>-v<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>DOCKER
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># Trova la veth dell&#39;host associata al container</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="nv">CPID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.State.Pid}}&#39;</span><span class="w"> </span>netdemo<span class="k">)</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="c1"># Il network namespace del container</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>sudo<span class="w"> </span>nsenter<span class="w"> </span>--target<span class="w"> </span><span class="nv">$CPID</span><span class="w"> </span>--net<span class="w"> </span>ip<span class="w"> </span>addr
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="c1"># eth0: inet 172.17.0.X  ← IP del container</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="c1"># Le veth sull&#39;host</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>ip<span class="w"> </span>link<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A1<span class="w"> </span>veth
+</code></pre></div>
+<h4 id="reti-user-defined">Reti User-Defined<a class="headerlink" href="#reti-user-defined" title="Permanent link">&para;</a></h4>
+<p>Le reti create con <code>docker network create</code> usano un bridge separato e offrono <strong>DNS integrato</strong> (i container si trovano per nome):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>docker<span class="w"> </span>network<span class="w"> </span>create<span class="w"> </span>mynet
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>db<span class="w"> </span>--network<span class="w"> </span>mynet<span class="w"> </span>postgres:16
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>app<span class="w"> </span>--network<span class="w"> </span>mynet<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">DB_HOST</span><span class="o">=</span>db<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span>myapp
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="c1"># &quot;app&quot; può raggiungere &quot;db&quot; per hostname — Docker risolve i nomi via DNS interno</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>ping<span class="w"> </span>db
+</code></pre></div>
+<hr />
+<h3 id="security-primitives-capabilities-e-seccomp">Security Primitives: Capabilities e Seccomp<a class="headerlink" href="#security-primitives-capabilities-e-seccomp" title="Permanent link">&para;</a></h3>
+<p>Storicamente, i processi Linux sono o <strong>root</strong> (con tutti i privilegi) o <strong>non-root</strong> (senza). Le <strong>capabilities</strong> spezzano questi privilegi in unità granulari.</p>
+<h4 id="linux-capabilities">Linux Capabilities<a class="headerlink" href="#linux-capabilities" title="Permanent link">&para;</a></h4>
+<p>Docker <strong>rimuove</strong> la maggior parte delle capabilities per default, lasciando solo quelle necessarie:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Le capabilities di default di Docker (subset sicuro)</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="c1"># CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_FSETID, CAP_FOWNER,</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="c1"># CAP_NET_BIND_SERVICE, CAP_NET_RAW (←rimuovibile!),</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># CAP_SETGID, CAP_SETUID, CAP_SETFCAP, CAP_MKNOD,</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="c1"># CAP_AUDIT_WRITE, CAP_KILL, CAP_SYS_CHROOT</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="c1"># Container minimale — nessuna capability</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--cap-drop<span class="w"> </span>ALL<span class="w"> </span>alpine<span class="w"> </span>id
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="c1"># Aggiungi solo ciò che serve (es. bind su porta &lt;1024)</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--cap-drop<span class="w"> </span>ALL<span class="w"> </span>--cap-add<span class="w"> </span>NET_BIND_SERVICE<span class="w"> </span>nginx
+</code></pre></div>
+<h4 id="seccomp-filtro-syscall">Seccomp: Filtro Syscall<a class="headerlink" href="#seccomp-filtro-syscall" title="Permanent link">&para;</a></h4>
+<p>Seccomp (Secure Computing Mode) filtra le <strong>system call</strong> che un container può eseguire. Docker applica un profilo seccomp di default che blocca ~44 syscall pericolose.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Verifica il profilo seccomp di un container</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>docker<span class="w"> </span>inspect<span class="w"> </span>demo<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[0].HostConfig.SecurityOpt&#39;</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># [&quot;seccomp=...&quot;]  ← profilo JSON</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="c1"># Container senza seccomp (più permissivo, meno sicuro)</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--security-opt<span class="w"> </span><span class="nv">seccomp</span><span class="o">=</span>unconfined<span class="w"> </span>alpine<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">  </span>strace<span class="w"> </span>ls<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-5
+</code></pre></div>
+<blockquote>
+<p><strong>Per Kubernetes:</strong> I <code>SecurityContext</code> di un Pod applicano queste stesse primitive a livello orchestrato. <code>runAsNonRoot</code>, <code>capabilities.drop</code>, <code>seccompProfile</code> mappano direttamente a queste funzionalità kernel.</p>
+</blockquote>
+<hr />
+<h2 id="hands-on-guidato-90-min">Hands-on Guidato (90 min)<a class="headerlink" href="#hands-on-guidato-90-min" title="Permanent link">&para;</a></h2>
+<h3 id="esercizio-1-ispezione-namespace-di-un-container-live">Esercizio 1 — Ispezione Namespace di un Container Live<a class="headerlink" href="#esercizio-1-ispezione-namespace-di-un-container-live" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Step 1: Avvia un container in background</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>live<span class="w"> </span>nginx
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="c1"># Step 2: Trova il PID del processo nel container</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="nv">CPID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.State.Pid}}&#39;</span><span class="w"> </span>live<span class="k">)</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;PID del container: </span><span class="nv">$CPID</span><span class="s2">&quot;</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="c1"># Step 3: Confronta i namespace del container con quelli dell&#39;host</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;=== Namespace del container ===&quot;</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>ls<span class="w"> </span>-la<span class="w"> </span>/proc/<span class="nv">$CPID</span>/ns/
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;=== Namespace dell&#39;host (PID 1) ===&quot;</span>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>ls<span class="w"> </span>-la<span class="w"> </span>/proc/1/ns/
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="c1"># Step 4: Verifica che montino filesystem diversi</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>sudo<span class="w"> </span>nsenter<span class="w"> </span>--target<span class="w"> </span><span class="nv">$CPID</span><span class="w"> </span>--mount<span class="w"> </span>ls<span class="w"> </span>/
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a><span class="c1"># Vedremo il filesystem del container (Alpine/Debian), non quello dell&#39;host</span>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a><span class="c1"># Step 5: Confronta i PID</span>
+<a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>nginx<span class="w">           </span><span class="c1"># PID alto sull&#39;host</span>
+<a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a>sudo<span class="w"> </span>nsenter<span class="w"> </span>--target<span class="w"> </span><span class="nv">$CPID</span><span class="w"> </span>--pid<span class="w"> </span>ps<span class="w"> </span>aux<span class="w">  </span><span class="c1"># PID 1 nel container</span>
+</code></pre></div>
+<h3 id="esercizio-2-container-a-mano-con-unshare">Esercizio 2 — Container "a Mano" con <code>unshare</code><a class="headerlink" href="#esercizio-2-container-a-mano-con-unshare" title="Permanent link">&para;</a></h3>
+<p>Creiamo un container manualmente, senza Docker:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Step 1: Scarica una rootfs Alpine</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>/tmp/mycontainer/rootfs
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>docker<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="k">$(</span>docker<span class="w"> </span>create<span class="w"> </span>alpine<span class="k">)</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tar<span class="w"> </span>-x<span class="w"> </span>-C<span class="w"> </span>/tmp/mycontainer/rootfs
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="c1"># Step 2: Crea un namespace isolato ed entra</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>sudo<span class="w"> </span>unshare<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">  </span>--mount<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">  </span>--uts<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">  </span>--ipc<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">  </span>--pid<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="w">  </span>--fork<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="w">  </span>--map-root-user<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="w">  </span>chroot<span class="w"> </span>/tmp/mycontainer/rootfs<span class="w"> </span>/bin/sh
+<a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a>
+<a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="c1"># Dentro il &quot;container a mano&quot;:</span>
+<a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a>hostname<span class="w"> </span>mycontainer<span class="w">  </span><span class="c1"># cambia l&#39;hostname (UTS namespace)</span>
+<a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a>hostname<span class="w">              </span><span class="c1"># → mycontainer</span>
+<a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a>ps<span class="w"> </span>aux<span class="w">                </span><span class="c1"># → solo sh (PID 1) e ps</span>
+<a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a>id<span class="w">                    </span><span class="c1"># → uid=0(root) — ma mappato a user non-root sull&#39;host</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Nota:</strong> Questo è esattamente ciò che <code>runc</code> fa, in modo più sofisticato. <code>runc</code> legge un file <code>config.json</code> (lo spec OCI) e chiama <code>clone()</code> con i flag dei namespace appropriati.</p>
+</blockquote>
+<h3 id="esercizio-3-esplorazione-overlayfs">Esercizio 3 — Esplorazione OverlayFS<a class="headerlink" href="#esercizio-3-esplorazione-overlayfs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># Step 1: Avvia un container</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>overlay-test<span class="w"> </span>nginx
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># Step 2: Ispeziona la struttura dei layer</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>docker<span class="w"> </span>inspect<span class="w"> </span>overlay-test<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[0].GraphDriver.Data&#39;</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="c1"># Step 3: Salva i path</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="nv">LOWER</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>overlay-test<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[0].GraphDriver.Data.LowerDir&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d:<span class="w"> </span>-f1<span class="k">)</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="nv">UPPER</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>overlay-test<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[0].GraphDriver.Data.UpperDir&#39;</span><span class="k">)</span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="nv">MERGED</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>overlay-test<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[0].GraphDriver.Data.MergedDir&#39;</span><span class="k">)</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="c1"># Step 4: Verifica il mount OverlayFS attivo</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>mount<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>overlay
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a><span class="c1"># Step 5: Crea un file nel container</span>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>overlay-test<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;test&#39; &gt; /tmp/overlaytest.txt&quot;</span>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a>
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="c1"># Step 6: Trova il file nell&#39;upperdir (ma non nel lowerdir)</span>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>ls<span class="w"> </span><span class="nv">$UPPER</span>/tmp/<span class="w">         </span><span class="c1"># → overlaytest.txt ← modifiche del container</span>
+<a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a>ls<span class="w"> </span><span class="nv">$LOWER</span>/tmp/<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Non esiste nel lower layer&quot;</span>
+<a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a>
+<a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a><span class="c1"># Step 7: Elimina il container — le modifiche scompaiono</span>
+<a id="__codelineno-22-23" name="__codelineno-22-23" href="#__codelineno-22-23"></a>docker<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>overlay-test
+<a id="__codelineno-22-24" name="__codelineno-22-24" href="#__codelineno-22-24"></a>ls<span class="w"> </span><span class="nv">$UPPER</span>/tmp/<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Layer rimosso&quot;</span>
+</code></pre></div>
+<h3 id="esercizio-4-oom-kill-con-cgroups">Esercizio 4 — OOM Kill con cgroups<a class="headerlink" href="#esercizio-4-oom-kill-con-cgroups" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Step 1: Avvia un container con memoria limitata</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--memory<span class="o">=</span>50m<span class="w"> </span>--memory-swap<span class="o">=</span>50m<span class="w"> </span>--name<span class="w"> </span>oom-demo<span class="w"> </span>nginx
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nv">CID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.Id}}&#39;</span><span class="w"> </span>oom-demo<span class="k">)</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="c1"># Step 2: Verifica il limite nel cgroup</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="nv">CGROUP_PATH</span><span class="o">=</span><span class="s2">&quot;/sys/fs/cgroup/system.slice/docker-</span><span class="si">${</span><span class="nv">CID</span><span class="si">}</span><span class="s2">.scope&quot;</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>cat<span class="w"> </span><span class="nv">$CGROUP_PATH</span>/memory.max
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="c1"># 52428800  (= 50MB)</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="c1"># Step 3: Guarda i contatori OOM prima del test</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>cat<span class="w"> </span><span class="nv">$CGROUP_PATH</span>/memory.events
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="c1"># Step 4: Causa un OOM (genera dati casuali in RAM)</span>
+<a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>oom-demo<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a><span class="w">  </span><span class="s2">&quot;dd if=/dev/urandom of=/dev/null bs=1M count=100 &amp;</span>
+<a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="s2">   dd if=/dev/urandom bs=1M count=100 | cat &gt; /dev/null&quot;</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a>
+<a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a><span class="c1"># Step 5: Monitora lo stato</span>
+<a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a>watch<span class="w"> </span>docker<span class="w"> </span>ps<span class="w"> </span>-a<span class="w"> </span>--filter<span class="w"> </span><span class="nv">name</span><span class="o">=</span>oom-demo
+<a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a><span class="c1"># Lo stato diventerà &quot;Exited (137)&quot;</span>
+<a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a>
+<a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a><span class="c1"># Step 6: Verifica l&#39;OOM kill</span>
+<a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a>docker<span class="w"> </span>inspect<span class="w"> </span>oom-demo<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[0].State | {OOMKilled, ExitCode}&#39;</span>
+<a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a><span class="c1"># &quot;OOMKilled&quot;: true, &quot;ExitCode&quot;: 137</span>
+<a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a>
+<a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a>cat<span class="w"> </span><span class="nv">$CGROUP_PATH</span>/memory.events<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a><span class="w">  </span>docker<span class="w"> </span>inspect<span class="w"> </span>oom-demo<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[0].HostConfig.Memory&#39;</span>
+</code></pre></div>
+<h3 id="esercizio-5-network-namespace-manuale">Esercizio 5 — Network Namespace Manuale<a class="headerlink" href="#esercizio-5-network-namespace-manuale" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Step 1: Crea due network namespace</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span>add<span class="w"> </span>ns-red
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span>add<span class="w"> </span>ns-blue
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="c1"># Step 2: Crea un veth pair</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>sudo<span class="w"> </span>ip<span class="w"> </span>link<span class="w"> </span>add<span class="w"> </span>veth-red<span class="w"> </span><span class="nb">type</span><span class="w"> </span>veth<span class="w"> </span>peer<span class="w"> </span>name<span class="w"> </span>veth-blue
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="c1"># Step 3: Assegna le estremità ai namespace</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>sudo<span class="w"> </span>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>veth-red<span class="w"> </span>netns<span class="w"> </span>ns-red
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>sudo<span class="w"> </span>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>veth-blue<span class="w"> </span>netns<span class="w"> </span>ns-blue
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>
+<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a><span class="c1"># Step 4: Configura gli indirizzi IP</span>
+<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>ns-red<span class="w"> </span>ip<span class="w"> </span>addr<span class="w"> </span>add<span class="w"> </span><span class="m">10</span>.10.0.1/24<span class="w"> </span>dev<span class="w"> </span>veth-red
+<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>ns-blue<span class="w"> </span>ip<span class="w"> </span>addr<span class="w"> </span>add<span class="w"> </span><span class="m">10</span>.10.0.2/24<span class="w"> </span>dev<span class="w"> </span>veth-blue
+<a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a>
+<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a><span class="c1"># Step 5: Attiva le interfacce</span>
+<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>ns-red<span class="w"> </span>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>veth-red<span class="w"> </span>up
+<a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>ns-blue<span class="w"> </span>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>veth-blue<span class="w"> </span>up
+<a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a>
+<a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a><span class="c1"># Step 6: Testa la connettività</span>
+<a id="__codelineno-24-21" name="__codelineno-24-21" href="#__codelineno-24-21"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>ns-red<span class="w"> </span>ping<span class="w"> </span>-c<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="m">10</span>.10.0.2
+<a id="__codelineno-24-22" name="__codelineno-24-22" href="#__codelineno-24-22"></a><span class="c1"># 3 packets transmitted, 3 received</span>
+<a id="__codelineno-24-23" name="__codelineno-24-23" href="#__codelineno-24-23"></a>
+<a id="__codelineno-24-24" name="__codelineno-24-24" href="#__codelineno-24-24"></a><span class="c1"># Step 7: Confronta con Docker</span>
+<a id="__codelineno-24-25" name="__codelineno-24-25" href="#__codelineno-24-25"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>net-test<span class="w"> </span>nginx
+<a id="__codelineno-24-26" name="__codelineno-24-26" href="#__codelineno-24-26"></a><span class="nv">CPID</span><span class="o">=</span><span class="k">$(</span>docker<span class="w"> </span>inspect<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{{.State.Pid}}&#39;</span><span class="w"> </span>net-test<span class="k">)</span>
+<a id="__codelineno-24-27" name="__codelineno-24-27" href="#__codelineno-24-27"></a>sudo<span class="w"> </span>nsenter<span class="w"> </span>--target<span class="w"> </span><span class="nv">$CPID</span><span class="w"> </span>--net<span class="w"> </span>ip<span class="w"> </span>addr
+<a id="__codelineno-24-28" name="__codelineno-24-28" href="#__codelineno-24-28"></a><span class="c1"># eth0 con IP Docker (172.17.0.x)</span>
+<a id="__codelineno-24-29" name="__codelineno-24-29" href="#__codelineno-24-29"></a>
+<a id="__codelineno-24-30" name="__codelineno-24-30" href="#__codelineno-24-30"></a><span class="c1"># Cleanup</span>
+<a id="__codelineno-24-31" name="__codelineno-24-31" href="#__codelineno-24-31"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span>del<span class="w"> </span>ns-red
+<a id="__codelineno-24-32" name="__codelineno-24-32" href="#__codelineno-24-32"></a>sudo<span class="w"> </span>ip<span class="w"> </span>netns<span class="w"> </span>del<span class="w"> </span>ns-blue
+</code></pre></div>
+<hr />
+<h2 id="capstone-challenge-30-min">Capstone Challenge (30 min)<a class="headerlink" href="#capstone-challenge-30-min" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>"Il Container che Uccide Se Stesso"</strong></p>
+<p>Un container in produzione continua a riavviarsi ogni pochi minuti senza messaggi
+di errore chiari nei log applicativi. Il team sospetta un problema di memoria.</p>
+<p><strong>Setup della challenge:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">  </span>--restart<span class="o">=</span>always<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">  </span>--memory<span class="o">=</span>30m<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">  </span>--memory-swap<span class="o">=</span>30m<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">  </span>--name<span class="w"> </span>mystery-app<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">  </span>nginx
+</code></pre></div></p>
+<p><strong>Il tuo compito:</strong></p>
+<ol>
+<li>Identifica se il container sta venendo killato dall'OOM killer
+   (hint: <code>docker inspect</code>, <code>memory.events</code> nel cgroup)</li>
+<li>Leggi quante volte l'OOM killer è intervenuto</li>
+<li>Trova il limite di memoria attuale e proponi il valore corretto
+   (hint: usa <code>docker stats</code> per osservare il consumo reale)</li>
+<li>Modifica il container per usare il limite corretto e verifica che smetta di riavviarsi</li>
+</ol>
+<p><strong>Bonus:</strong> Riesci a simulare lo stesso comportamento usando direttamente i file cgroup,
+senza usare <code>docker inspect</code>?</p>
+</blockquote>
+<hr />
+<h2 id="riepilogo-concetti-chiave">Riepilogo Concetti Chiave<a class="headerlink" href="#riepilogo-concetti-chiave" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tecnologia</th>
+<th>Funzione</th>
+<th>Tool di ispezione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Namespaces</td>
+<td>Isolamento (vista)</td>
+<td><code>lsns</code>, <code>/proc/PID/ns/</code>, <code>nsenter</code></td>
+</tr>
+<tr>
+<td>cgroups v2</td>
+<td>Limitazione (risorse)</td>
+<td><code>/sys/fs/cgroup/</code>, <code>systemd-cgtop</code></td>
+</tr>
+<tr>
+<td>OverlayFS</td>
+<td>Filesystem a layer</td>
+<td><code>docker inspect</code>, <code>/var/lib/docker/overlay2/</code></td>
+</tr>
+<tr>
+<td>veth + bridge</td>
+<td>Rete virtuale</td>
+<td><code>ip link</code>, <code>ip netns</code>, <code>bridge fdb</code></td>
+</tr>
+<tr>
+<td>Capabilities</td>
+<td>Privilegi granulari</td>
+<td><code>capsh --print</code>, <code>getpcaps PID</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="self-study-assignment">Self-Study Assignment<a class="headerlink" href="#self-study-assignment" title="Permanent link">&para;</a></h2>
+<p>Completa questi tutorial interattivi su iximiuz Labs prima del prossimo incontro (60–90 min totali). Ogni tutorial ha un playground integrato dove puoi eseguire i comandi direttamente nel browser:</p>
+<div class="admonition tip">
+<p class="admonition-title">Lab iximiuz</p>
+<p>Completa il tutorial: <strong>Container Filesystem From Scratch</strong></p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Lab iximiuz</p>
+<p>Completa il tutorial: <strong>Container Networking From Scratch</strong></p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Lab iximiuz</p>
+<p>Completa il tutorial: <strong>Controlling Process Resources With Cgroups</strong></p>
+</div>
+<p><strong>Letture di approfondimento:</strong></p>
+<ul>
+<li><a href="https://oneuptime.com/blog/post/2025-12-08-how-docker-actually-works/view">How Docker Actually Works</a> — catena di esecuzione, OCI, networking</li>
+<li><a href="https://martinheinz.dev/blog/44">Deep Dive into Docker Union Filesystem</a> — OverlayFS, CoW, whiteout files</li>
+<li><a href="https://k8studio.io/tutorials/container-architecture-namespaces-cgroups-overlayfs/">Container Architecture: Namespaces, cgroups, OverlayFS</a> — overview completo</li>
+</ul>
+<p><strong>Per andare ancora più a fondo:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Leggi la documentazione del kernel sui namespaces</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>man<span class="w"> </span><span class="m">7</span><span class="w"> </span>namespaces
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>man<span class="w"> </span><span class="m">7</span><span class="w"> </span>cgroups
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>man<span class="w"> </span><span class="m">8</span><span class="w"> </span>ip-netns
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="c1"># Esplora la struttura cgroup del tuo sistema</span>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>systemd-cgtop<span class="w">          </span><span class="c1"># monitor in tempo reale</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>systemctl<span class="w"> </span>status<span class="w"> </span>docker<span class="w"> </span><span class="c1"># vedi il cgroup di dockerd</span>
+</code></pre></div>
+<hr />
+<h2 id="risorse-aggiuntive">Risorse Aggiuntive<a class="headerlink" href="#risorse-aggiuntive" title="Permanent link">&para;</a></h2>
+<h3 id="specifiche-e-standard-ufficiali">Specifiche e Standard Ufficiali<a class="headerlink" href="#specifiche-e-standard-ufficiali" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/opencontainers/runtime-spec">OCI Runtime Specification</a> — il contratto che ogni container runtime deve implementare: lifecycle, process, mounts, hooks</li>
+<li><a href="https://github.com/opencontainers/image-spec">OCI Image Specification</a> — formato standardizzato di immagine: manifest JSON, image config, layers tar.gz</li>
+<li><a href="https://github.com/opencontainers/distribution-spec">OCI Distribution Specification</a> — API REST dei container registry (push, pull, discover, referrers)</li>
+<li><a href="https://man7.org/linux/man-pages/man7/namespaces.7.html">Linux man7: namespaces(7)</a> — documentazione canonica kernel Linux sui namespace: tipi, API, semantica</li>
+<li><a href="https://man7.org/linux/man-pages/man7/cgroups.7.html">Linux man7: cgroups(7)</a> — control groups v1 e v2 a confronto, interfacce del kernel</li>
+<li><a href="https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html">Linux Kernel Docs: Control Groups v2</a> — guida ufficiale del kernel con tutti i controller disponibili (cpu, memory, io, pid)</li>
+<li><a href="https://docs.docker.com/engine/security/">Docker Engine Security</a> — panoramica sicurezza: namespace, cgroup, capabilities, seccomp, AppArmor</li>
+</ul>
+<h3 id="blog-e-articoli-tecnici">Blog e Articoli Tecnici<a class="headerlink" href="#blog-e-articoli-tecnici" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://jvns.ca/blog/2016/10/10/what-even-is-a-container/">Julia Evans — What even is a container?</a> — spiegazione chiara e accessibile con disegni a matita, ottimo punto di partenza assoluto</li>
+<li><a href="https://jvns.ca/blog/2019/11/18/how-containers-work--overlayfs/">Julia Evans — How containers work: overlayfs</a> — OverlayFS spiegato con esempi pratici, whiteout files, copy-on-write layer</li>
+<li><a href="https://iximiuz.com/en/posts/container-learning-path/">Ivan Velichko — Container Learning Path (iximiuz.com)</a> — percorso di apprendimento strutturato da zero agli internals avanzati</li>
+<li><a href="https://martinheinz.dev/blog/44">Martin Heinz — Deep Dive into Docker's Overlay Filesystem</a> — OverlayFS in profondità: layer ordering, benchmark, casi d'uso</li>
+<li><a href="https://container.training/">Jérôme Petazzoni — container.training</a> — materiale formativo completo sui container, liberamente disponibile con slide e lab interattivi</li>
+<li><a href="https://www.brendangregg.com/linuxperf.html">Brendan Gregg — Linux Performance Tools</a> — mappa completa degli strumenti di performance e profiling su Linux (cgroup, perf, ftrace, bpftrace)</li>
+</ul>
+<h3 id="video-fondamentali">Video Fondamentali<a class="headerlink" href="#video-fondamentali" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=8fi7uSYlOdc"><strong>"Containers From Scratch" — Liz Rice (GOTO 2018)</strong></a> — live coding di un container in Go in 30 minuti: fork, namespace, cgroup, pivot_root. Assolutamente imperdibile</li>
+<li><a href="https://www.youtube.com/watch?v=sK5i-N34im8"><strong>"Cgroups, namespaces, and beyond" — Jérôme Petazzoni (DockerCon 2015)</strong></a> — il talk che ha reso comprensibili gli internals dei container a migliaia di sviluppatori</li>
+<li><a href="https://www.youtube.com/watch?v=f-dN8Osm8z0"><strong>"CAP_NET_RAW and ARP Spoofing in Your Cluster" — Liz Rice (KubeCon NA 2019)</strong></a> — live demo di come la capability CAP_NET_RAW abilita attacchi ARP/DNS spoofing nei cluster Kubernetes: cosa togliere e cosa tenere per limitare la superficie d'attacco</li>
+</ul>
+<h3 id="strumenti-e-repository">Strumenti e Repository<a class="headerlink" href="#strumenti-e-repository" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://github.com/lizrice/containers-from-scratch">lizrice/containers-from-scratch</a> — codice sorgente Go del talk GOTO: container implementato in ~100 righe, da studiare riga per riga</li>
+<li><a href="https://github.com/p8952/bocker">p8952/bocker</a> — Docker reimplementato in 100 righe di bash, estremamente didattico</li>
+<li><a href="https://github.com/opencontainers/runc">opencontainers/runc</a> — runtime OCI di riferimento usato da Docker, containerd, CRI-O</li>
+<li><a href="https://github.com/containers/crun">containers/crun</a> — runtime OCI scritto in C, ultra-leggero (~700KB), usato da Podman</li>
+<li><a href="https://docs.docker.com/engine/security/seccomp/">seccomp Profiles for Docker</a> — profili seccomp predefiniti e come creare profili personalizzati con <code>--security-opt</code></li>
+</ul>
+<h3 id="approfondimenti-avanzati">Approfondimenti Avanzati<a class="headerlink" href="#approfondimenti-avanzati" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://lwn.net/Articles/531114/">LWN.net — Namespaces in operation (serie completa)</a> — serie di articoli tecnici su tutti i tipi di namespace: mount, pid, network, user, cgroup, uts</li>
+<li><a href="https://lwn.net/Articles/896235/">LWN.net — A decade of container security</a> — evoluzione della sicurezza dei container nel kernel Linux negli ultimi 10 anni</li>
+<li><a href="https://blog.quarkslab.com/analysis-of-runc.html">Quarkslab — Analysis of runc</a> — analisi di sicurezza di runc: vulnerabilità storiche (CVE-2019-5736), escape, best practice attuali</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Torna su
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["navigation.sections","navigation.expand","navigation.top","content.code.copy","content.code.annotate","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copiato","clipboard.copy":"Copia","search.result.more.one":"1 altro in questa pagina","search.result.more.other":"# altri in questa pagina","search.result.none":"Nessun documento trovato","search.result.one":"1 documento trovato","search.result.other":"# documenti trovati","search.result.placeholder":"Scrivi per iniziare a cercare","search.result.term.missing":"Non presente","select.version":"Seleziona la versione"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5fcf0de6.min.js"></script>
+      
+    
+  </body>
+</html>

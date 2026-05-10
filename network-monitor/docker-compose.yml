@@ -1,0 +1,101 @@
+version: "3.8"
+
+services:
+  zeek:
+    image: zeek/zeek:latest
+    network_mode: host
+    privileged: true
+    command: zeek -i en0 local
+    volumes:
+      - zeek-logs:/zeek-logs
+      - ./zeek/local.zeek:/usr/local/zeek/share/zeek/site/local.zeek:ro
+    environment:
+      - ZEEK_LOG_DIR=/zeek-logs
+    restart: unless-stopped
+    # NOTE: network_mode: host does NOT work on macOS Docker Desktop.
+    # On Mac, run Zeek natively instead — see README.md and zeek-native.sh.
+
+  elasticsearch:
+    image: elastic/elasticsearch:8.12.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  kibana:
+    image: elastic/kibana:8.12.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  filebeat:
+    image: elastic/filebeat:8.12.0
+    user: root
+    ports:
+      - "5514:5514/udp"
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./data/zeek-logs:/zeek-logs:ro
+      - ./data/proc-logs:/proc-logs:ro
+      - ./data/netflow-logs:/netflow-logs:ro
+      - /Users/feynman/.openclaw/logs:/openclaw-logs:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
+  netflow-collector:
+    image: netsampler/goflow2:latest
+    command: >
+      -transport=file
+      -transport.file=/netflow-logs/netflow.log
+      -listen=netflow://:2055
+    ports:
+      - "2055:2055/udp"
+    volumes:
+      - ./data/netflow-logs:/netflow-logs
+    restart: unless-stopped
+
+  elastalert2:
+    image: jertel/elastalert2:latest
+    volumes:
+      - ./elastalert2/config.yml:/opt/elastalert/config.yaml:ro
+      - ./elastalert2/rules:/opt/elastalert/rules:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  zeek-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/zeek-logs
+  es-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/elasticsearch

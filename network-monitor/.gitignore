@@ -1,0 +1,13 @@
+## Data and runtime artifacts
+data/
+*.pcap
+
+## Logs (but not scripts that happen to end in .log)
+*.log
+!scripts/**
+
+## Environment
+.env
+
+## macOS
+.DS_Store

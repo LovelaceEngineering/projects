@@ -1,0 +1,155 @@
+filebeat.inputs:
+  - type: log
+    id: zeek-conn
+    enabled: true
+    paths:
+      - /zeek-logs/conn.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields:
+      zeek_log_type: conn
+    fields_under_root: true
+
+  - type: log
+    id: zeek-dns
+    enabled: true
+    paths:
+      - /zeek-logs/dns.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields:
+      zeek_log_type: dns
+    fields_under_root: true
+
+  - type: log
+    id: zeek-http
+    enabled: true
+    paths:
+      - /zeek-logs/http.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields:
+      zeek_log_type: http
+    fields_under_root: true
+
+  - type: log
+    id: zeek-ssl
+    enabled: true
+    paths:
+      - /zeek-logs/ssl.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields:
+      zeek_log_type: ssl
+    fields_under_root: true
+
+  - type: log
+    id: zeek-weird
+    enabled: true
+    paths:
+      - /zeek-logs/weird.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields:
+      zeek_log_type: weird
+    fields_under_root: true
+
+  - type: log
+    id: udm-netflow
+    enabled: true
+    paths:
+      - /netflow-logs/netflow.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields:
+      log_source: udm-netflow
+    fields_under_root: true
+
+  - type: syslog
+    id: udm-syslog
+    enabled: true
+    protocol.udp:
+      host: "0.0.0.0:5514"
+    fields:
+      log_source: udm
+      log_type: syslog
+    fields_under_root: true
+
+  - type: log
+    id: proc-watcher
+    enabled: true
+    paths:
+      - /proc-logs/proc-conn-*.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields:
+      log_source: proc-watcher
+    fields_under_root: true
+
+  - type: log
+    id: openclaw-gateway
+    enabled: true
+    paths:
+      - /openclaw-logs/gateway.log
+      - /openclaw-logs/gateway.err.log
+      - /openclaw-logs/gateway-watchdog.log
+    multiline.type: pattern
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}T'
+    multiline.negate: true
+    multiline.match: after
+    fields:
+      log_source: openclaw
+      log_type: gateway
+    fields_under_root: true
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  pipeline: "zeek-geoip"
+  indices:
+    - index: "zeek-conn-%{+yyyy.MM.dd}"
+      when.equals:
+        zeek_log_type: conn
+    - index: "zeek-dns-%{+yyyy.MM.dd}"
+      when.equals:
+        zeek_log_type: dns
+    - index: "zeek-http-%{+yyyy.MM.dd}"
+      when.equals:
+        zeek_log_type: http
+    - index: "zeek-ssl-%{+yyyy.MM.dd}"
+      when.equals:
+        zeek_log_type: ssl
+    - index: "zeek-weird-%{+yyyy.MM.dd}"
+      when.equals:
+        zeek_log_type: weird
+    - index: "udm-netflow-%{+yyyy.MM.dd}"
+      when.equals:
+        log_source: udm-netflow
+    - index: "udm-syslog-%{+yyyy.MM.dd}"
+      when.equals:
+        log_source: udm
+    - index: "proc-conn-%{+yyyy.MM.dd}"
+      when.equals:
+        log_source: proc-watcher
+    - index: "openclaw-%{+yyyy.MM.dd}"
+      when.equals:
+        log_source: openclaw
+
+setup.ilm.enabled: false
+setup.template.enabled: false
+
+# Ensure @timestamp is set from Zeek's ts field
+processors:
+  - timestamp:
+      field: ts
+      target_field: "@timestamp"
+      layouts:
+        - UNIX
+      ignore_missing: true
+      ignore_failure: true
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 3

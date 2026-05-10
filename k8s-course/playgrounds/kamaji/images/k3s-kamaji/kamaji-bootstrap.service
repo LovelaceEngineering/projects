@@ -1,0 +1,14 @@
+[Unit]
+Description=First-boot Kamaji bootstrap (cert-manager + Kamaji via Helm)
+After=k3s.service network-online.target
+Wants=k3s.service network-online.target
+ConditionPathExists=!/var/lib/kamaji-bootstrap.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/install-kamaji.sh
+RemainAfterExit=yes
+TimeoutStartSec=15m
+
+[Install]
+WantedBy=multi-user.target

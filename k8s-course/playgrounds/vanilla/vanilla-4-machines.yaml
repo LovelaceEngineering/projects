@@ -1,0 +1,95 @@
+kind: playground
+name: vanilla-4-machines
+base: flexbox
+title: Vanilla 4 Machines
+description: Four plain Linux machines connected on a shared local network.
+categories: []
+playground:
+    networks:
+        - name: local
+          subnet: 172.16.0.0/24
+    machines:
+        - name: machine-01
+          users:
+            - name: root
+            - name: laborant
+              default: true
+          drives:
+            - source: ghcr.io/iximiuz/labenv-base:0.7.0
+              mount: /
+              size: 30GiB
+          network:
+            interfaces:
+                - network: local
+          resources:
+            cpuCount: 3
+            ramSize: 5GiB
+        - name: machine-02
+          users:
+            - name: root
+            - name: laborant
+              default: true
+          drives:
+            - source: ghcr.io/iximiuz/labenv-base:0.7.0
+              mount: /
+              size: 30GiB
+          network:
+            interfaces:
+                - network: local
+          resources:
+            cpuCount: 3
+            ramSize: 5GiB
+        - name: machine-03
+          users:
+            - name: root
+            - name: laborant
+              default: true
+          drives:
+            - source: ghcr.io/iximiuz/labenv-base:0.7.0
+              mount: /
+              size: 30GiB
+          network:
+            interfaces:
+                - network: local
+          resources:
+            cpuCount: 3
+            ramSize: 5GiB
+        - name: machine-04
+          users:
+            - name: root
+            - name: laborant
+              default: true
+          drives:
+            - source: ghcr.io/iximiuz/labenv-base:0.7.0
+              mount: /
+              size: 30GiB
+          network:
+            interfaces:
+                - network: local
+          resources:
+            cpuCount: 3
+            ramSize: 5GiB
+    tabs:
+        - id: terminal-machine-01
+          kind: terminal
+          name: machine-01
+          machine: machine-01
+        - id: terminal-machine-02
+          kind: terminal
+          name: machine-02
+          machine: machine-02
+        - id: terminal-machine-03
+          kind: terminal
+          name: machine-03
+          machine: machine-03
+        - id: terminal-machine-04
+          kind: terminal
+          name: machine-04
+          machine: machine-04
+    accessControl:
+        canList:
+            - anyone
+        canRead:
+            - anyone
+        canStart:
+            - anyone

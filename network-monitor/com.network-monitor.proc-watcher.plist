@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.network-monitor.proc-watcher</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/python3</string>
+        <string>/Users/feynman/repos/network-monitor/scripts/proc-watcher.py</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PROC_WATCHER_LOG_DIR</key>
+        <string>/Users/feynman/repos/network-monitor/data/proc-logs</string>
+        <key>PROC_WATCHER_INTERVAL</key>
+        <string>3</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/feynman/repos/network-monitor/data/proc-watcher.stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/feynman/repos/network-monitor/data/proc-watcher.stderr.log</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+</dict>
+</plist>

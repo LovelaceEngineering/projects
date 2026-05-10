@@ -1,0 +1,45 @@
+name: "New External Connection"
+type: new_term
+index: zeek-conn-*
+
+# Alert when an outgoing connection is made to a destination IP that has not
+# been seen in the last 24 hours. Useful for detecting C2 callbacks, data
+# exfiltration to novel endpoints, or unexpected third-party services.
+
+fields:
+  - "id.resp_h"
+
+terms_window_size:
+  days: 1
+
+# Only match outgoing connections from the local network to external IPs
+filter:
+  - term:
+      zeek_log_type: conn
+  - term:
+      local_orig: true
+  - term:
+      local_resp: false
+
+alert:
+  - debug
+
+alert_subject: "New External Connection to {0}"
+alert_subject_args:
+  - id.resp_h
+
+alert_text: |
+  A connection was made to an IP address not seen in the last 24 hours.
+
+  Source IP:       {0}
+  Destination IP:  {1}
+  Destination Port:{2}
+  Protocol:        {3}
+
+  This destination IP has not appeared in zeek-conn logs in the past 24h.
+  Verify whether this is expected traffic or a potential indicator of compromise.
+alert_text_args:
+  - id.orig_h
+  - id.resp_h
+  - id.resp_p
+  - proto

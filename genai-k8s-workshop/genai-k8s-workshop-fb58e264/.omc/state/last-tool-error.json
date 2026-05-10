@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"labctl ssh 69eaf5d53f4f2f5d38a1244a --machine node-02 --user root -- 'crictl --runtime-endpoint unix:///run/k3s/containerd/containerd.sock images 2>&1 | grep -i ollama; echo \\\"---\\\"; ps -e...",
-  "error": "Exit code 1\n---\nlabctl: Process exited with status 1.",
-  "timestamp": "2026-04-24T05:09:17.329Z",
-  "retry_count": 1
-}

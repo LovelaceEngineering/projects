@@ -1,0 +1,5 @@
+[    8892ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://labs.iximiuz.com/api/v1/courses/kubernets-for-engineers-italian-c57839fc/lessons/scheduling-rbac-security:0
+[    8987ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://labs.iximiuz.com/api/v1/courses/kubernets-for-engineers-italian-c57839fc:0
+[    8990ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://labs.iximiuz.com/api/v1/courses/kubernets-for-engineers-italian-c57839fc/lessons:0
+[   18576ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://labs.iximiuz.com/api/v1/courses/containerd-cli/lessons/image-management:0
+[  166708ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://labs.iximiuz.com/api/v1/courses/kubernets-for-engineers-italian-c57839fc/lessons/scheduling-rbac-security/content:0

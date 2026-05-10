@@ -1,0 +1,268 @@
+kind: playground
+name: my-hard-way 
+base: flexbox
+title: Kubernetes the Hard Way
+description: Un cluster Kubernetes assemblato manualmente, ispirato al tutorial "Kubernetes the Hard Way" di Kelsey Hightower.
+cover: /content/files/playgrounds/kubernetes-the-hard-way-7df4f945/__static__/cover.webp
+categories:
+    - kubernetes
+markdown: "Benvenuto nell'ambiente di laboratorio **Kubernetes!**!\n\nQuesto playground è ispirato al [tutorial di Kelsey Hightower](https://github.com/kelseyhightower/kubernetes-the-hard-way) con lo stesso nome...\n\n... con una differenza fondamentale: **tutto è già configurato e pronto da esplorare!**\n\nNiente provisioning manuale di VM su un provider cloud o ore di configurazione di ogni singolo componente da zero.\n\n::remark-box\nL'obiettivo di questo playground è fornire un ambiente di apprendimento per\nesplorazione e comprensione del funzionamento interno di un cluster Kubernetes.\n\n**La configurazione e le pratiche operative presentate qui NON sono raccomandate per l'uso in produzione.**\n::\n\n## Provalo a casa (non al lavoro!)\n\nSi dice spesso \"non provarlo a casa\" quando si fa qualcosa di pericoloso.\n\nIn questo caso, dovresti provarlo **a casa** invece che al lavoro.\n\nI tuoi cluster di produzione ti ringrazieranno per aver imparato nel modo difficile in un ambiente sicuro prima! \U0001F609\n\n## Cosa lo rende diverso?\n\nQuesto ambiente di laboratorio fornisce il risultato finale del tutorial di Kelsey: un **cluster Kubernetes completamente funzionale, assemblato manualmente** dove ogni componente gira come servizio systemd (anziché come container).\n\nInvece di passare ore a configurare VM cloud e ogni singolo componente,\npuoi passare direttamente all'esplorazione e all'apprendimento da un cluster \"hard way\" funzionante.\n\nOltre alla configurazione originale del tutorial di Kelsey, questo lab include anche:\n- **CoreDNS** per la risoluzione DNS all'interno del cluster\n- **Flannel** come addon di rete (che sostituisce le route statiche per il networking dei Pod)\n\n## Panoramica dell'architettura\n\nQuesto cluster è composto da più nodi che eseguono vari componenti Kubernetes come servizi systemd.\nL'architettura segue il design tradizionale di Kubernetes, ma con tutto in esecuzione sul sistema host anziché in container.\n\n### Control Plane\n\nIl control plane esegue i servizi Kubernetes principali che gestiscono lo stato del cluster e prendono le decisioni di scheduling.\n\n::image-box\n---\n:src: __static__/control-plane-v5.svg\n:alt: 'Componenti del control plane'\n---\n\n_Componenti del control plane_\n::\n\nQuesti componenti sono essenziali per il corretto funzionamento del control plane:\n\n| **Componente**              | **Ruolo**                                                                                  |\n|-----------------------------|--------------------------------------------------------------------------------------------|\n| **etcd**                    | Database distribuito chiave-valore che conserva tutti i dati del cluster.                  |\n| **kube-apiserver**          | Il cuore del control plane Kubernetes, che espone le API di Kubernetes.                    |\n| **kube-controller-manager** | Gestisce vari controller che mantengono lo stato desiderato del cluster.                   |\n| **kube-scheduler**          | Assegna i Pod ai Nodi in base alla disponibilità delle risorse e altri vincoli.            |\n| **CoreDNS** _(opzionale)_   | Fornisce risoluzione DNS e service discovery per il cluster.                               |\n\n### Nodi Worker\n\nI nodi worker eseguono i carichi di lavoro effettivi e forniscono l'ambiente di runtime per i pod.\n\n::image-box\n---\n:src: __static__/worker-v4.svg\n:alt: 'Componenti del nodo worker'\n---\n\n_Componenti del nodo worker_\n::\n\n| **Componente**                      | **Ruolo**                                                                               |\n|-------------------------------------|-----------------------------------------------------------------------------------------|\n| **kubelet**                         | Agente principale del nodo che garantisce l'esecuzione dei container nei pod.           |\n| **Container Runtime (containerd)**  | Gestisce creazione, esecuzione e pulizia dei container.                                 |\n| **Network addon (flannel)**         | Fornisce il networking per la comunicazione pod-to-pod.                                 |\n| **kube-proxy**                      | Proxy di rete che mantiene le regole di rete sui nodi per il networking dei servizi.    |\n\n## Per iniziare\n\n1. **Esplora l'ambiente**: Il file di servizio systemd di ogni componente mostra esattamente come sono configurati i componenti Kubernetes\n2. **Controlla lo stato dei servizi**: Usa `systemctl status <nome-servizio>` per vedere lo stato di ogni componente\n3. **Esamina i log**: Usa `journalctl -u <nome-servizio>` per visualizzare i log dettagliati per il troubleshooting\n4. **Modifica le configurazioni**: Modifica i file di servizio e riavvia i servizi per vedere come le modifiche influenzano il cluster\n5. **Rompi le cose in sicurezza**: Questo è un ambiente di apprendimento—sperimenta con l'arresto dei servizi o la modifica delle configurazioni\n\n## Versioni\n\nIl playground include le seguenti versioni dei componenti:\n\n- **containerd:** 2.1.4\n  - **runc:** v1.3.0\n  - **CNI plugins:** v1.7.1\n  - **nerdctl:** 2.1.3\n- **etcd:** v3.6.4\n- **Kubernetes:** v1.34.0\n- **Network addon (flannel):** v0.27.2\n  - **CNI plugin:** v1.7.1-flannel2\n- **CoreDNS:** 1.12.2\n\n## (Quasi) Certificato\n\n::image-box\n---\n:src: __static__/certified.webp\n:max-width: 150px\n:float: right\n---\n::\n\nEcco un fatto curioso: questo cluster Kubernetes assemblato manualmente e gestito da systemd **supera** i [test di conformance sonobuoy](https://sonobuoy.io/)!\n\nQuesto significa che la nostra \"distribuzione\" di Kubernetes potrebbe tecnicamente essere sottomessa per la certificazione ufficiale CNCF. Certo, non certificheremo \"Kubernetes the Hard Way su systemd\" come distribuzione ufficiale, ma è impressionante che un cluster assemblato interamente a mano possa soddisfare gli stessi standard delle piattaforme Kubernetes di livello enterprise.\n\nQuesto dimostra che sotto la superficie, Kubernetes è \"semplicemente\" una raccolta di componenti ben progettati e interoperabili.\n\nCongratulazioni—stai lavorando con una distribuzione Kubernetes (quasi) certificata! \U0001F389"
+playground:
+    networks:
+        - name: local
+          subnet: 172.16.0.0/24
+    machines:
+        - name: dev-machine
+          users:
+            - name: root
+            - name: laborant
+              default: true
+          drives:
+            - source: oci://ghcr.io/sagikazarmark/iximiuz-labs/playgrounds/kubernetes-the-hard-way/dev-machine:live@sha256:93396755f2f75fb4333d641fabb4e6405f1f378cbe8a79933e07bca427a94183
+              mount: /
+              size: 30GiB
+          network:
+            interfaces:
+                - network: local
+          resources:
+            cpuCount: 1
+            ramSize: 1GiB
+        - name: control-plane
+          users:
+            - name: root
+            - name: laborant
+              default: true
+              welcome: '-'
+          drives:
+            - source: oci://ghcr.io/sagikazarmark/iximiuz-labs/playgrounds/kubernetes-the-hard-way/control-plane:live@sha256:2810b2ea371470b1992ccbd19dbab55a6334ef28e2eaf3d8abb9d8444e295828
+              mount: /
+              size: 30GiB
+          network:
+            interfaces:
+                - network: local
+          resources:
+            cpuCount: 3
+            ramSize: 5GiB
+        - name: worker-01
+          users:
+            - name: root
+            - name: laborant
+              default: true
+              welcome: '-'
+          drives:
+            - source: oci://ghcr.io/sagikazarmark/iximiuz-labs/playgrounds/kubernetes-the-hard-way/worker:live@sha256:cc80e1931db0626213c40e58228cfbce419f2cf2cbe71e05bb2644bb0e38d5d4
+              mount: /
+              size: 30GiB
+          network:
+            interfaces:
+                - network: local
+          resources:
+            cpuCount: 3
+            ramSize: 5GiB
+        - name: worker-02
+          users:
+            - name: root
+            - name: laborant
+              default: true
+              welcome: '-'
+          drives:
+            - source: oci://ghcr.io/sagikazarmark/iximiuz-labs/playgrounds/kubernetes-the-hard-way/worker:live@sha256:cc80e1931db0626213c40e58228cfbce419f2cf2cbe71e05bb2644bb0e38d5d4
+              mount: /
+              size: 30GiB
+          network:
+            interfaces:
+                - network: local
+          resources:
+            cpuCount: 3
+            ramSize: 5GiB
+    tabs:
+        - id: terminal-dev-machine
+          kind: terminal
+          name: dev-machine
+          machine: dev-machine
+        - id: terminal-control-plane
+          kind: terminal
+          name: control-plane
+          machine: control-plane
+        - id: terminal-worker-01
+          kind: terminal
+          name: worker-01
+          machine: worker-01
+        - id: terminal-worker-02
+          kind: terminal
+          name: worker-02
+          machine: worker-02
+    initTasks:
+        init_apply_manifests:
+            name: init_apply_manifests
+            machine: control-plane
+            init: true
+            user: root
+            needs:
+                - init_wait_control_plane
+            run: |
+                export KUBECONFIG=/etc/kubernetes/admin.conf
+
+                kubectl apply -f /usr/share/coredns/manifests
+                kubectl apply -f /usr/share/kube-apiserver/manifests
+        init_control_plane_network:
+            name: init_control_plane_network
+            machine: control-plane
+            init: true
+            user: root
+            needs:
+                - init_wait_nodes
+            run: |
+                export KUBECONFIG=/etc/kubernetes/admin.conf
+
+                metric=0
+
+                for node in $(kubectl get nodes -o name); do
+                  nodeIp=$(kubectl get $node -o jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}')
+                  podCidr=$(kubectl get $node -o jsonpath='{.spec.podCIDR}')
+
+                  ((metric+=1))
+
+                  ip route add $podCidr via $nodeIp dev eth0
+                  sudo ip route add 10.96.0.0/12 via $nodeIp metric $metric
+                done
+        init_distribute_kubeconfig:
+            name: init_distribute_kubeconfig
+            machine: control-plane
+            init: true
+            user: root
+            needs:
+                - init_kubeconfig
+            run: |
+                #alias scp='scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+
+                for host in $(grep worker- /etc/hosts | awk '{print $2}'); do
+                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /etc/kubernetes/kubelet-$host.conf $host:/etc/kubernetes/kubelet.conf
+                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /etc/kubernetes/{flannel,kube-proxy}.conf $host:/etc/kubernetes/
+                done
+
+                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /etc/kubernetes/admin.conf dev-machine:/root/.kube/config
+        init_generate_encryption_key:
+            name: init_generate_encryption_key
+            machine: control-plane
+            init: true
+            user: root
+            run: |
+                key=$(head -c 32 /dev/urandom | base64)
+
+                yq -i ".resources[0].providers[0].aescbc.keys[0].secret |= \"$key\"" /etc/kubernetes/encryption-config.yaml
+        init_generate_service_account_keys:
+            name: init_generate_service_account_keys
+            machine: control-plane
+            init: true
+            user: root
+            run: /usr/share/kube-apiserver/generate-sa.sh
+        init_kubeconfig:
+            name: init_kubeconfig
+            machine: control-plane
+            init: true
+            user: root
+            needs:
+                - init_pki
+            run: |
+                /usr/share/kube-apiserver/kubeconfig.sh
+
+                chown coredns:coredns /etc/kubernetes/coredns.conf
+        init_kubeconfig_laborant:
+            name: init_kubeconfig_laborant
+            machine: dev-machine
+            init: true
+            user: root
+            needs:
+                - init_wait_kubeconfig_dev_machine
+            run: |
+                cp /root/.kube/config /home/laborant/.kube/config
+                chown laborant:laborant /home/laborant/.kube/config
+        init_pki:
+            name: init_pki
+            machine: control-plane
+            init: true
+            user: root
+            run: |
+                /usr/share/etcd/generate-pki.sh
+                /usr/share/etcd/configure.sh
+
+                /usr/share/kube-apiserver/generate-pki.sh
+
+                for host in $(grep worker- /etc/hosts | awk '{print $2}'); do
+                  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /etc/kubernetes/pki/ca.crt $host:/etc/kubernetes/pki/
+                done
+        init_start_control_plane:
+            name: init_start_control_plane
+            machine: control-plane
+            init: true
+            user: root
+            needs:
+                - init_pki
+                - init_kubeconfig
+                - init_generate_service_account_keys
+                - init_generate_encryption_key
+            run: systemctl enable --now --no-block etcd kube-apiserver kube-controller-manager kube-scheduler coredns
+        init_start_worker_01:
+            name: init_start_worker_01
+            machine: worker-01
+            init: true
+            user: root
+            needs:
+                - init_wait_kubeconfig_worker_01
+            run: systemctl enable --now --no-block kubelet kube-proxy flanneld
+        init_start_worker_02:
+            name: init_start_worker_02
+            machine: worker-02
+            init: true
+            user: root
+            needs:
+                - init_wait_kubeconfig_worker_02
+            run: systemctl enable --now --no-block kubelet kube-proxy flanneld
+        init_wait_control_plane:
+            name: init_wait_control_plane
+            machine: control-plane
+            init: true
+            user: root
+            needs:
+                - init_start_control_plane
+            run: kubectl --kubeconfig=/etc/kubernetes/admin.conf cluster-info
+        init_wait_kubeconfig_dev_machine:
+            name: init_wait_kubeconfig_dev_machine
+            machine: dev-machine
+            init: true
+            user: root
+            run: test -f /root/.kube/config
+        init_wait_kubeconfig_worker_01:
+            name: init_wait_kubeconfig_worker_01
+            machine: worker-01
+            init: true
+            user: root
+            run: test -f /etc/kubernetes/kubelet.conf
+        init_wait_kubeconfig_worker_02:
+            name: init_wait_kubeconfig_worker_02
+            machine: worker-02
+            init: true
+            user: root
+            run: test -f /etc/kubernetes/kubelet.conf
+        init_wait_nodes:
+            name: init_wait_nodes
+            machine: control-plane
+            init: true
+            user: root
+            needs:
+                - init_start_control_plane
+            run: |
+                export KUBECONFIG=/etc/kubernetes/admin.conf
+
+                for host in $(grep worker- /etc/hosts | awk '{print $2}'); do
+                  kubectl wait --for=create node/$host
+                  kubectl wait --for=jsonpath='{.spec.podCIDR}' node/$host
+                done
+    accessControl:
+        canList:
+            - anyone
+        canRead:
+            - anyone
+        canStart:
+            - anyone

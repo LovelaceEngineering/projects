@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #FAF9F5;
+  }
+}
+
+/* Subtle warm grid background texture */
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(rgba(28, 24, 22, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28, 24, 22, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
