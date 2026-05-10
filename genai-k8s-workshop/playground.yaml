@@ -1,0 +1,181 @@
+kind: playground
+name: genai-k8s-workshop
+base: k3s
+title: "Generative AI in Kubernetes Workshop"
+description: |
+  A multi-node Kubernetes cluster for the GenAI workshop.
+  Includes Helm, cert-manager pre-installed, and Ollama image pre-pulled.
+  Run the exercises to deploy LLMs, explore GPU scheduling, KServe, and more.
+cover: __static__/genai-k8s-cover.png
+categories:
+  - kubernetes
+  - containers
+playground:
+  networks:
+    - name: local
+      subnet: 172.16.0.0/24
+  machines:
+    - name: dev-machine
+      users:
+        - name: root
+        - name: laborant
+          default: true
+      drives:
+        - source: k3s-dev-machine
+          mount: /
+          size: 30GiB
+      network:
+        interfaces:
+          - address: 172.16.0.5/24
+            network: local
+      resources:
+        cpuCount: 2
+        ramSize: 4GiB
+    - name: cplane-01
+      users:
+        - name: root
+        - name: laborant
+          default: true
+      drives:
+        - source: k3s-cplane
+          mount: /
+          size: 30GiB
+      network:
+        interfaces:
+          - address: 172.16.0.2/24
+            network: local
+      resources:
+        cpuCount: 2
+        ramSize: 4GiB
+    - name: node-01
+      users:
+        - name: root
+        - name: laborant
+          default: true
+      drives:
+        - source: k3s-node
+          mount: /
+          size: 30GiB
+      network:
+        interfaces:
+          - address: 172.16.0.3/24
+            network: local
+      resources:
+        cpuCount: 2
+        ramSize: 4GiB
+    - name: node-02
+      users:
+        - name: root
+        - name: laborant
+          default: true
+      drives:
+        - source: k3s-node
+          mount: /
+          size: 30GiB
+      network:
+        interfaces:
+          - address: 172.16.0.4/24
+            network: local
+      resources:
+        cpuCount: 2
+        ramSize: 4GiB
+  tabs:
+    - id: terminal
+      kind: terminal
+      name: Terminal
+      machine: dev-machine
+    - id: ide
+      kind: ide
+      name: IDE
+      machine: dev-machine
+    - id: kexp
+      kind: kexp
+      name: Explorer
+      machine: dev-machine
+  initTasks:
+    init_setup:
+      name: init_setup
+      machine: dev-machine
+      init: true
+      user: root
+      run: |
+        #!/bin/bash
+        set -euo pipefail
+
+        # Wait for cluster
+        while ! kubectl get nodes 2>/dev/null | grep -q " Ready"; do sleep 2; done
+
+        # Install Helm
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+        # Install cert-manager (needed by KServe later)
+        kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.3/cert-manager.yaml
+        kubectl wait --for=condition=Available deployment --all -n cert-manager --timeout=120s || true
+
+        # Delete k3s built-in nvidia RuntimeClass (conflicts with fake-gpu-operator)
+        kubectl delete runtimeclass nvidia 2>/dev/null || true
+
+        # Deploy Ollama on a worker node and pre-pull the TinyLlama model
+        # This saves ~5 min per student during Lab 2
+        cat <<OLLAMA | kubectl apply -f -
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ollama-prepull
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: ollama-prepull
+          template:
+            metadata:
+              labels:
+                app: ollama-prepull
+            spec:
+              containers:
+              - name: ollama
+                image: ollama/ollama:latest
+                ports:
+                - containerPort: 11434
+                resources:
+                  requests:
+                    cpu: "500m"
+                    memory: 1Gi
+                  limits:
+                    cpu: "1"
+                    memory: 2Gi
+        OLLAMA
+
+        echo "Waiting for Ollama to be ready..."
+        kubectl rollout status deployment/ollama-prepull --timeout=300s || true
+
+        # Pull TinyLlama model (637MB) so it's cached in the container
+        PREPULL_POD=$(kubectl get pod -l app=ollama-prepull -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+        if [ -n "$PREPULL_POD" ]; then
+          echo "Pre-pulling TinyLlama model..."
+          kubectl exec $PREPULL_POD -c ollama -- ollama pull tinyllama 2>&1 | tail -3 || true
+          echo "Model cached!"
+        fi
+
+        # Clean up the prepull deployment (image stays cached on the node)
+        kubectl delete deployment ollama-prepull 2>/dev/null || true
+
+        echo ""
+        echo "========================================="
+        echo "  GenAI in Kubernetes Workshop"
+        echo ""
+        echo "  Cluster: $(kubectl get nodes --no-headers | wc -l | tr -d ' ') nodes ready"
+        echo "  Helm: $(helm version --short)"
+        echo "  cert-manager: installed"
+        echo "  Ollama image: cached on worker node"
+        echo "  TinyLlama model: pre-pulled"
+        echo ""
+        echo "  Start with Lab 1!"
+        echo "========================================="
+  accessControl:
+    canList:
+      - anyone
+    canRead:
+      - anyone
+    canStart:
+      - anyone

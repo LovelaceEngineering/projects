@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Repatriation Assessment Tool</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #232635;
+  --border: #2d3044;
+  --text: #e4e4e7;
+  --text-muted: #9ca3af;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --green: #22c55e;
+  --green-dim: #166534;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --blue: #3b82f6;
+  --aws: #ff9900;
+  --azure: #0078d4;
+  --gcp: #4285f4;
+  --onprem: #22c55e;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+header {
+  text-align: center;
+  padding: 48px 0 32px;
+}
+header h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+header p {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 20px;
+}
+.card h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card h2 .icon { font-size: 1.3rem; }
+
+/* Grid layouts */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* Form elements */
+label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+input, select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus {
+  border-color: var(--accent);
+}
+.input-group { margin-bottom: 16px; }
+.input-suffix {
+  position: relative;
+}
+.input-suffix span {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+/* Cloud provider tabs */
+.provider-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.provider-tab {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.provider-tab:hover { border-color: var(--accent); }
+.provider-tab.active { border-color: var(--accent); color: var(--text); background: rgba(99,102,241,0.1); }
+.provider-tab .dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-aws { background: var(--aws); }
+.dot-azure { background: var(--azure); }
+.dot-gcp { background: var(--gcp); }
+
+/* Workload rows */
+.workload-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px;
+  background: var(--surface2);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.workload-row.header {
+  background: transparent;
+  padding: 0 16px 4px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+@media (max-width: 768px) {
+  .workload-row { grid-template-columns: 1fr 1fr; }
+  .workload-row.header { display: none; }
+}
+.btn-remove {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.btn-remove:hover { background: rgba(239,68,68,0.1); }
+.btn-add {
+  background: rgba(99,102,241,0.1);
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  width: 100%;
+  transition: background 0.2s;
+}
+.btn-add:hover { background: rgba(99,102,241,0.2); }
+
+/* Calculate button */
+.btn-calculate {
+  background: linear-gradient(135deg, var(--accent), #4f46e5);
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  display: block;
+  margin: 24px auto;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-calculate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99,102,241,0.3);
+}
+
+/* Results */
+#results { display: none; }
+.results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.metric-card {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+}
+.metric-card .value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.metric-card .label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.metric-card.savings .value { color: var(--green); }
+.metric-card.cost .value { color: var(--red); }
+.metric-card.neutral .value { color: var(--blue); }
+.metric-card.env .value { color: #34d399; }
+
+/* Charts */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
+.chart-box {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 20px;
+}
+.chart-box h3 {
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  color: var(--text-muted);
+}
+.chart-box canvas { max-height: 300px; }
+
+/* Breakdown table */
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+.breakdown-table th, .breakdown-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.breakdown-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.breakdown-table td.positive { color: var(--green); font-weight: 600; }
+.breakdown-table td.negative { color: var(--red); font-weight: 600; }
+
+/* Assumptions */
+.assumptions {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+}
+.assumptions h3 {
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+}
+.assumptions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.assumption-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+.assumption-item .key { color: var(--text-muted); }
+.assumption-item .val { font-weight: 600; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Tooltip */
+.info-tip {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  text-align: center;
+  line-height: 16px;
+  cursor: help;
+  margin-left: 4px;
+}
+
+/* Section divider */
+.section-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin: 32px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Export */
+.btn-export {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+.btn-export:hover { background: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>☁️→🏢 Cloud Repatriation Assessment</h1>
+    <p>Calculate potential cost savings and environmental impact of bringing cloud workloads back to on-premises infrastructure</p>
+  </header>
+
+  <!-- Cloud Provider Selection -->
+  <div class="card">
+    <h2><span class="icon">☁️</span> Current Cloud Provider</h2>
+    <div class="provider-tabs" id="providerTabs">
+      <div class="provider-tab active" data-provider="aws" onclick="selectProvider('aws')">
+        <span class="dot dot-aws"></span> AWS
+      </div>
+      <div class="provider-tab" data-provider="azure" onclick="selectProvider('azure')">
+        <span class="dot dot-azure"></span> Azure
+      </div>
+      <div class="provider-tab" data-provider="gcp" onclick="selectProvider('gcp')">
+        <span class="dot dot-gcp"></span> GCP
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="input-group">
+        <label>Region</label>
+        <select id="region">
+          <option value="us-east">US East</option>
+          <option value="us-west">US West</option>
+          <option value="eu-west" selected>EU West (Ireland/Netherlands)</option>
+          <option value="eu-central">EU Central (Frankfurt)</option>
+          <option value="ap-southeast">Asia Pacific (Singapore)</option>
+          <option value="ap-northeast">Asia Pacific (Tokyo)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Contract Type</label>
+        <select id="contractType">
+          <option value="ondemand">On-Demand</option>
+          <option value="reserved1">1-Year Reserved</option>
+          <option value="reserved3">3-Year Reserved</option>
+          <option value="savings">Savings Plan</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Assessment Period</label>
+        <select id="period">
+          <option value="1">1 Year</option>
+          <option value="3" selected>3 Years</option>
+          <option value="5">5 Years</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workload Configuration -->
+  <div class="card">
+    <h2><span class="icon">⚙️</span> Workloads</h2>
+    <div class="workload-row header">
+      <div>Workload Type</div>
+      <div>vCPUs</div>
+      <div>RAM (GB)</div>
+      <div>Storage (TB)</div>
+      <div>Egress (TB/mo)</div>
+      <div></div>
+    </div>
+    <div id="workloadList">
+      <div class="workload-row" data-id="1">
+        <div>
+          <select class="wl-type">
+            <option value="web">Web / API Servers</option>
+            <option value="database">Databases</option>
+            <option value="compute">Compute / Batch</option>
+            <option value="ml">ML / AI Training</option>
+            <option value="storage">Storage-heavy</option>
+            <option value="kubernetes">Kubernetes Cluster</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div><input type="number" class="wl-vcpu" value="64" min="1"></div>
+        <div><input type="number" class="wl-ram" value="256" min="1"></div>
+        <div><input type="number" class="wl-storage" value="10" min="0" step="0.5"></div>
+        <div><input type="number" class="wl-egress" value="5" min="0" step="0.5"></div>
+        <div><button class="btn-remove" onclick="removeWorkload(this)">✕</button></div>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addWorkload()">+ Add Workload</button>
+  </div>
+
+  <!-- On-Prem Configuration -->
+  <div class="card">
+    <h2><span class="icon">🏢</span> On-Premises Configuration</h2>
+    <div class="grid-4">
+      <div class="input-group">
+        <label>Colocation Cost <span class="info-tip" title="Monthly cost per rack unit (42U rack)">?</span></label>
+        <div class="input-suffix">
+          <input type="number" id="coloMonthly" value="1200" min="0">
+          <span>€/rack/mo</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Power Cost</label>
+        <div class="input-suffix">
+          <input type="number" id="powerCost" value="0.12" min="0" step="0.01">
+          <span>€/kWh</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Data Center PUE <span class="info-tip" title="Power Usage Effectiveness (1.0=perfect, 1.5=average)">?</span></label>
+        <input type="number" id="pue" value="1.4" min="1.0" max="3.0" step="0.1">
+      </div>
+      <div class="input-group">
+        <label>Network Bandwidth</label>
+        <div class="input-suffix">
+          <input type="number" id="bandwidthCost" value="5" min="0">
+          <span>€/Mbps/mo</span>
+        </div>
+      </div>
+    </div>
+    <div class="grid-4">
+      <div class="input-group">
+        <label>FTE Engineers Needed</label>
+        <input type="number" id="fteCount" value="2" min="0" step="0.5">
+      </div>
+      <div class="input-group">
+        <label>FTE Annual Cost (fully loaded)</label>
+        <div class="input-suffix">
+          <input type="number" id="fteCost" value="95000" min="0">
+          <span>€/yr</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Hardware Refresh Cycle</label>
+        <select id="hwRefresh">
+          <option value="3">3 Years</option>
+          <option value="4">4 Years</option>
+          <option value="5" selected>5 Years</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Energy Source</label>
+        <select id="energySource">
+          <option value="grid-eu">EU Grid Average</option>
+          <option value="grid-us">US Grid Average</option>
+          <option value="renewable">100% Renewable</option>
+          <option value="mixed">Mixed (50% Renewable)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculate -->
+  <button class="btn-calculate" onclick="calculate()">📊 Calculate Repatriation Savings</button>
+
+  <!-- Results Section -->
+  <div id="results">
+    <div class="section-title">Summary</div>
+    <div class="results-grid" id="summaryCards"></div>
+
+    <div class="section-title">Cost Comparison</div>
+    <div class="charts-grid">
+      <div class="chart-box">
+        <h3>Annual Cost Breakdown</h3>
+        <canvas id="costChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Cumulative Cost Over Time</h3>
+        <canvas id="cumulativeChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section-title">Environmental Impact</div>
+    <div class="charts-grid">
+      <div class="chart-box">
+        <h3>Annual Carbon Emissions (tonnes CO₂e)</h3>
+        <canvas id="carbonChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Energy Consumption (MWh/year)</h3>
+        <canvas id="energyChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section-title">Detailed Breakdown</div>
+    <div class="card" style="overflow-x: auto;">
+      <table class="breakdown-table" id="breakdownTable">
+        <thead><tr></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="assumptions" id="assumptions"></div>
+
+    <div style="text-align: center; margin-top: 24px; padding-bottom: 40px;">
+      <button class="btn-export" onclick="exportCSV()">📥 Export as CSV</button>
+      <button class="btn-export" onclick="exportPDF()" style="margin-left: 8px;">📄 Print Report</button>
+    </div>
+  </div>
+
+  <footer style="text-align:center; padding: 32px 0 16px; color: var(--text-muted); font-size: 0.8rem;">
+    Built by <a href="https://github.com/ams0" style="color:var(--accent);text-decoration:none;">ams0</a> — Cost estimates based on public cloud pricing (2025). For illustration purposes.
+  </footer>
+</div>
+
+<script>
+// ─── State ───
+let selectedProvider = 'aws';
+let workloadCounter = 1;
+let charts = {};
+
+// ─── Cloud Pricing Models ($/hr per vCPU, simplified) ───
+const PRICING = {
+  aws: {
+    label: 'AWS',
+    color: '#ff9900',
+    compute: { ondemand: 0.048, reserved1: 0.030, reserved3: 0.020, savings: 0.025 },
+    ram_per_gb: 0.0065,
+    storage_per_tb_mo: 23,     // EBS gp3
+    egress_per_tb: 87,          // first 10TB
+    managed_k8s: 73,            // EKS cluster/mo
+    carbon_pue: 1.2,
+    carbon_gco2_kwh: 340,       // US avg grid mix (varies by region)
+    region_multiplier: { 'us-east': 1.0, 'us-west': 1.05, 'eu-west': 1.08, 'eu-central': 1.12, 'ap-southeast': 1.15, 'ap-northeast': 1.2 }
+  },
+  azure: {
+    label: 'Azure',
+    color: '#0078d4',
+    compute: { ondemand: 0.050, reserved1: 0.032, reserved3: 0.021, savings: 0.027 },
+    ram_per_gb: 0.0070,
+    storage_per_tb_mo: 21,
+    egress_per_tb: 82,
+    managed_k8s: 73,
+    carbon_pue: 1.18,
+    carbon_gco2_kwh: 320,
+    region_multiplier: { 'us-east': 1.0, 'us-west': 1.03, 'eu-west': 1.06, 'eu-central': 1.10, 'ap-southeast': 1.12, 'ap-northeast': 1.18 }
+  },
+  gcp: {
+    label: 'GCP',
+    color: '#4285f4',
+    compute: { ondemand: 0.044, reserved1: 0.028, reserved3: 0.018, savings: 0.023 },
+    ram_per_gb: 0.0060,
+    storage_per_tb_mo: 20,
+    egress_per_tb: 110,
+    managed_k8s: 73,
+    carbon_pue: 1.1,
+    carbon_gco2_kwh: 280,      // GCP is relatively clean
+    region_multiplier: { 'us-east': 1.0, 'us-west': 1.02, 'eu-west': 1.05, 'eu-central': 1.08, 'ap-southeast': 1.10, 'ap-northeast': 1.15 }
+  }
+};
+
+// ─── On-prem hardware reference costs ───
+const HARDWARE = {
+  server_per_vcpu: 85,         // € per vCPU of server hardware (amortized)
+  ram_per_gb: 8,                // € per GB DDR5
+  storage_per_tb: 120,          // € per TB NVMe/SSD
+  network_switch_base: 5000,    // € base network gear per rack
+  watts_per_vcpu: 12,           // Watts per vCPU under load
+  watts_per_gb_ram: 0.3,
+  watts_per_tb_storage: 6,
+};
+
+// Carbon intensity by energy source (gCO2/kWh)
+const CARBON_INTENSITY = {
+  'grid-eu': 230,
+  'grid-us': 380,
+  'renewable': 15,
+  'mixed': 122
+};
+
+// ─── Provider Selection ───
+function selectProvider(p) {
+  selectedProvider = p;
+  document.querySelectorAll('.provider-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.provider === p);
+  });
+}
+
+// ─── Workload Management ───
+function addWorkload() {
+  workloadCounter++;
+  const row = document.createElement('div');
+  row.className = 'workload-row';
+  row.dataset.id = workloadCounter;
+  row.innerHTML = `
+    <div><select class="wl-type">
+      <option value="web">Web / API Servers</option>
+      <option value="database">Databases</option>
+      <option value="compute">Compute / Batch</option>
+      <option value="ml">ML / AI Training</option>
+      <option value="storage">Storage-heavy</option>
+      <option value="kubernetes">Kubernetes Cluster</option>
+      <option value="other">Other</option>
+    </select></div>
+    <div><input type="number" class="wl-vcpu" value="16" min="1"></div>
+    <div><input type="number" class="wl-ram" value="64" min="1"></div>
+    <div><input type="number" class="wl-storage" value="2" min="0" step="0.5"></div>
+    <div><input type="number" class="wl-egress" value="1" min="0" step="0.5"></div>
+    <div><button class="btn-remove" onclick="removeWorkload(this)">✕</button></div>
+  `;
+  document.getElementById('workloadList').appendChild(row);
+}
+
+function removeWorkload(btn) {
+  const rows = document.querySelectorAll('.workload-row:not(.header)');
+  if (rows.length > 1) btn.closest('.workload-row').remove();
+}
+
+// ─── Gather Workloads ───
+function getWorkloads() {
+  const rows = document.querySelectorAll('#workloadList .workload-row');
+  return Array.from(rows).map(r => ({
+    type: r.querySelector('.wl-type').value,
+    vcpus: parseFloat(r.querySelector('.wl-vcpu').value) || 0,
+    ram: parseFloat(r.querySelector('.wl-ram').value) || 0,
+    storage: parseFloat(r.querySelector('.wl-storage').value) || 0,
+    egress: parseFloat(r.querySelector('.wl-egress').value) || 0,
+  }));
+}
+
+// ─── Calculate ───
+function calculate() {
+  const provider = PRICING[selectedProvider];
+  const region = document.getElementById('region').value;
+  const contract = document.getElementById('contractType').value;
+  const years = parseInt(document.getElementById('period').value);
+  const workloads = getWorkloads();
+
+  // On-prem inputs
+  const coloMonthly = parseFloat(document.getElementById('coloMonthly').value) || 0;
+  const powerCostKwh = parseFloat(document.getElementById('powerCost').value) || 0;
+  const pue = parseFloat(document.getElementById('pue').value) || 1.4;
+  const bwCost = parseFloat(document.getElementById('bandwidthCost').value) || 0;
+  const fteCount = parseFloat(document.getElementById('fteCount').value) || 0;
+  const fteCostAnnual = parseFloat(document.getElementById('fteCost').value) || 0;
+  const hwRefreshYears = parseInt(document.getElementById('hwRefresh').value) || 5;
+  const energySource = document.getElementById('energySource').value;
+
+  // Totals
+  let totalVcpus = 0, totalRam = 0, totalStorage = 0, totalEgress = 0;
+  let k8sCount = 0;
+  workloads.forEach(w => {
+    totalVcpus += w.vcpus;
+    totalRam += w.ram;
+    totalStorage += w.storage;
+    totalEgress += w.egress;
+    if (w.type === 'kubernetes') k8sCount++;
+  });
+
+  const regionMul = provider.region_multiplier[region] || 1.0;
+
+  // ─── Cloud Cost (Annual) ───
+  const cloudCompute = totalVcpus * provider.compute[contract] * 730 * 12 * regionMul;
+  const cloudRam = totalRam * provider.ram_per_gb * 730 * 12 * regionMul;
+  const cloudStorage = totalStorage * provider.storage_per_tb_mo * 12 * regionMul;
+  const cloudEgress = totalEgress * provider.egress_per_tb * 12;
+  const cloudK8s = k8sCount * provider.managed_k8s * 12;
+  const cloudSupport = (cloudCompute + cloudRam + cloudStorage) * 0.07; // ~7% support plan
+  const cloudAnnual = cloudCompute + cloudRam + cloudStorage + cloudEgress + cloudK8s + cloudSupport;
+
+  // ─── On-Prem Cost ───
+  // Hardware CAPEX
+  const hwServers = totalVcpus * HARDWARE.server_per_vcpu;
+  const hwRam = totalRam * HARDWARE.ram_per_gb;
+  const hwStorage = totalStorage * 1024 * HARDWARE.storage_per_tb * 0.001; // converting properly
+  const hwStorageActual = totalStorage * HARDWARE.storage_per_tb;
+  const racksNeeded = Math.ceil(totalVcpus / 128); // ~128 vCPUs per 2U server, ~20 servers per rack
+  const hwNetwork = racksNeeded * HARDWARE.network_switch_base;
+  const totalCapex = hwServers + hwRam + hwStorageActual + hwNetwork;
+  const hwAmortizedAnnual = totalCapex / hwRefreshYears;
+  const refreshCycles = Math.floor(years / hwRefreshYears);
+
+  // Power
+  const totalWatts = (totalVcpus * HARDWARE.watts_per_vcpu +
+                      totalRam * HARDWARE.watts_per_gb_ram +
+                      totalStorage * 1024 * HARDWARE.watts_per_tb_storage / 1024) * pue;
+  const totalKw = totalWatts / 1000;
+  const annualKwh = totalKw * 8760;
+  const annualPowerCost = annualKwh * powerCostKwh;
+
+  // Colocation
+  const annualColo = racksNeeded * coloMonthly * 12;
+
+  // Network
+  const requiredMbps = (totalEgress * 1024 * 1024) / (30 * 24 * 3600) * 8; // rough
+  const annualBw = requiredMbps * bwCost * 12;
+
+  // Staff
+  const annualStaff = fteCount * fteCostAnnual;
+
+  // Licensing estimate (OS, monitoring, backup)
+  const annualLicensing = totalVcpus * 15 * 12; // ~€15/vCPU/month
+
+  const onpremAnnual = hwAmortizedAnnual + annualPowerCost + annualColo + annualBw + annualStaff + annualLicensing;
+
+  // ─── Total over period ───
+  const cloudTotal = cloudAnnual * years;
+  const onpremTotal = totalCapex + (annualPowerCost + annualColo + annualBw + annualStaff + annualLicensing) * years +
+                      refreshCycles * totalCapex * 0.7; // 70% cost for refresh
+  const savings = cloudTotal - onpremTotal;
+  const savingsPct = cloudTotal > 0 ? ((savings / cloudTotal) * 100) : 0;
+
+  // ─── Environmental ───
+  // Cloud
+  const cloudPowerKw = (totalVcpus * 10 + totalRam * 0.25) / 1000; // Cloud is more efficient per unit
+  const cloudAnnualKwh = cloudPowerKw * 8760 * provider.carbon_pue;
+  const cloudCarbonTonnes = (cloudAnnualKwh * provider.carbon_gco2_kwh) / 1_000_000;
+  const cloudAnnualMwh = cloudAnnualKwh / 1000;
+
+  // On-prem
+  const onpremCarbonIntensity = CARBON_INTENSITY[energySource];
+  const onpremCarbonTonnes = (annualKwh * onpremCarbonIntensity) / 1_000_000;
+  const onpremAnnualMwh = annualKwh / 1000;
+  const carbonSaved = cloudCarbonTonnes - onpremCarbonTonnes;
+
+  // ─── Render Results ───
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+  // Summary cards
+  const fmt = (n) => n >= 1000000 ? `€${(n/1000000).toFixed(2)}M` : n >= 1000 ? `€${(n/1000).toFixed(0)}K` : `€${n.toFixed(0)}`;
+  const summaryHTML = `
+    <div class="metric-card neutral">
+      <div class="value">${fmt(cloudAnnual)}</div>
+      <div class="label">Cloud Annual Cost (${provider.label})</div>
+    </div>
+    <div class="metric-card neutral">
+      <div class="value">${fmt(onpremAnnual)}</div>
+      <div class="label">On-Prem Annual Cost</div>
+    </div>
+    <div class="metric-card ${savings > 0 ? 'savings' : 'cost'}">
+      <div class="value">${savings > 0 ? '' : '-'}${fmt(Math.abs(savings))}</div>
+      <div class="label">${years}-Year ${savings > 0 ? 'Savings' : 'Extra Cost'} (${savingsPct.toFixed(1)}%)</div>
+    </div>
+    <div class="metric-card env">
+      <div class="value">${carbonSaved > 0 ? '-' : '+'}${Math.abs(carbonSaved).toFixed(1)}t</div>
+      <div class="label">Annual CO₂ ${carbonSaved > 0 ? 'Reduction' : 'Increase'}</div>
+    </div>
+  `;
+  document.getElementById('summaryCards').innerHTML = summaryHTML;
+
+  // ─── Charts ───
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+
+  const chartDefaults = {
+    color: '#9ca3af',
+    borderColor: '#2d3044',
+  };
+  Chart.defaults.color = chartDefaults.color;
+  Chart.defaults.borderColor = chartDefaults.borderColor;
+
+  // Cost breakdown bar
+  charts.cost = new Chart(document.getElementById('costChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Compute', 'RAM', 'Storage', 'Egress', 'K8s/Managed', 'Support/License', 'Staff', 'Power', 'Colo', 'HW Amort.'],
+      datasets: [
+        {
+          label: provider.label,
+          data: [cloudCompute, cloudRam, cloudStorage, cloudEgress, cloudK8s, cloudSupport, 0, 0, 0, 0],
+          backgroundColor: provider.color + 'cc',
+        },
+        {
+          label: 'On-Premises',
+          data: [0, 0, 0, 0, 0, annualLicensing, annualStaff, annualPowerCost, annualColo + annualBw, hwAmortizedAnnual],
+          backgroundColor: '#22c55ecc',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { padding: 16 } } },
+      scales: {
+        y: { ticks: { callback: v => fmt(v) }, grid: { color: '#2d304466' } },
+        x: { ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // Cumulative line
+  const cumLabels = [];
+  const cumCloud = [];
+  const cumOnprem = [];
+  let cCloud = 0, cOnprem = totalCapex;
+  const opexAnnual = annualPowerCost + annualColo + annualBw + annualStaff + annualLicensing;
+  for (let y = 0; y <= years; y++) {
+    cumLabels.push(`Year ${y}`);
+    cumCloud.push(cCloud);
+    cumOnprem.push(cOnprem);
+    cCloud += cloudAnnual;
+    cOnprem += opexAnnual;
+    if (y > 0 && y % hwRefreshYears === 0) cOnprem += totalCapex * 0.7;
+  }
+
+  charts.cumulative = new Chart(document.getElementById('cumulativeChart'), {
+    type: 'line',
+    data: {
+      labels: cumLabels,
+      datasets: [
+        { label: provider.label, data: cumCloud, borderColor: provider.color, backgroundColor: provider.color + '20', fill: true, tension: 0.3 },
+        { label: 'On-Premises', data: cumOnprem, borderColor: '#22c55e', backgroundColor: '#22c55e20', fill: true, tension: 0.3 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { padding: 16 } } },
+      scales: {
+        y: { ticks: { callback: v => fmt(v) }, grid: { color: '#2d304466' } }
+      }
+    }
+  });
+
+  // Carbon chart
+  charts.carbon = new Chart(document.getElementById('carbonChart'), {
+    type: 'bar',
+    data: {
+      labels: [provider.label, 'On-Premises'],
+      datasets: [{
+        data: [cloudCarbonTonnes, onpremCarbonTonnes],
+        backgroundColor: [provider.color + 'cc', '#22c55ecc'],
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => v.toFixed(1) + 't' }, grid: { color: '#2d304466' } }
+      }
+    }
+  });
+
+  // Energy chart
+  charts.energy = new Chart(document.getElementById('energyChart'), {
+    type: 'doughnut',
+    data: {
+      labels: [`${provider.label} (${cloudAnnualMwh.toFixed(0)} MWh)`, `On-Prem (${onpremAnnualMwh.toFixed(0)} MWh)`],
+      datasets: [{
+        data: [cloudAnnualMwh, onpremAnnualMwh],
+        backgroundColor: [provider.color + 'cc', '#22c55ecc'],
+        borderWidth: 0,
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { padding: 16 } } } }
+  });
+
+  // ─── Breakdown Table ───
+  const thead = document.querySelector('#breakdownTable thead tr');
+  const tbody = document.querySelector('#breakdownTable tbody');
+  thead.innerHTML = `<th>Category</th><th>${provider.label}</th><th>On-Premises</th><th>Difference</th>`;
+  const rows = [
+    ['Compute', cloudCompute, 0],
+    ['RAM/Memory', cloudRam, 0],
+    ['Storage', cloudStorage, hwAmortizedAnnual * (hwStorageActual / totalCapex)],
+    ['Network/Egress', cloudEgress, annualBw],
+    ['Managed Services (K8s)', cloudK8s, 0],
+    ['Support/Licensing', cloudSupport, annualLicensing],
+    ['Staff (FTEs)', 0, annualStaff],
+    ['Power/Energy', 0, annualPowerCost],
+    ['Colocation/Facility', 0, annualColo],
+    ['Hardware (amortized)', 0, hwAmortizedAnnual],
+    ['**Total Annual**', cloudAnnual, onpremAnnual],
+    [`**Total ${years}-Year**`, cloudTotal, onpremTotal],
+  ];
+  tbody.innerHTML = rows.map(([cat, cloud, onprem]) => {
+    const diff = cloud - onprem;
+    const isBold = cat.startsWith('**');
+    const clean = cat.replace(/\*\*/g, '');
+    const style = isBold ? 'font-weight:700;border-top:2px solid var(--border)' : '';
+    return `<tr style="${style}">
+      <td>${clean}</td>
+      <td>${fmt(cloud)}</td>
+      <td>${fmt(onprem)}</td>
+      <td class="${diff > 0 ? 'positive' : diff < 0 ? 'negative' : ''}">${diff > 0 ? '+' : ''}${fmt(diff)}</td>
+    </tr>`;
+  }).join('');
+
+  // ─── Assumptions ───
+  document.getElementById('assumptions').innerHTML = `
+    <h3>📋 Key Assumptions</h3>
+    <div class="assumptions-grid">
+      <div class="assumption-item"><span class="key">Total vCPUs</span><span class="val">${totalVcpus}</span></div>
+      <div class="assumption-item"><span class="key">Total RAM</span><span class="val">${totalRam} GB</span></div>
+      <div class="assumption-item"><span class="key">Total Storage</span><span class="val">${totalStorage} TB</span></div>
+      <div class="assumption-item"><span class="key">Monthly Egress</span><span class="val">${totalEgress} TB</span></div>
+      <div class="assumption-item"><span class="key">Racks Needed</span><span class="val">${racksNeeded}</span></div>
+      <div class="assumption-item"><span class="key">Power Draw</span><span class="val">${totalKw.toFixed(1)} kW (${(totalKw * pue).toFixed(1)} kW w/ PUE)</span></div>
+      <div class="assumption-item"><span class="key">Cloud PUE</span><span class="val">${provider.carbon_pue}</span></div>
+      <div class="assumption-item"><span class="key">On-Prem PUE</span><span class="val">${pue}</span></div>
+      <div class="assumption-item"><span class="key">Cloud Carbon Intensity</span><span class="val">${provider.carbon_gco2_kwh} gCO₂/kWh</span></div>
+      <div class="assumption-item"><span class="key">On-Prem Carbon Intensity</span><span class="val">${onpremCarbonIntensity} gCO₂/kWh</span></div>
+      <div class="assumption-item"><span class="key">HW CAPEX</span><span class="val">${fmt(totalCapex)}</span></div>
+      <div class="assumption-item"><span class="key">Breakeven</span><span class="val">${savings > 0 && (cloudAnnual - opexAnnual) > 0 ? (totalCapex / (cloudAnnual - opexAnnual)).toFixed(1) + ' years' : 'N/A'}</span></div>
+    </div>
+  `;
+
+  // Store for export
+  window._lastResults = { provider: provider.label, years, cloudAnnual, onpremAnnual, cloudTotal, onpremTotal, savings, savingsPct, cloudCarbonTonnes, onpremCarbonTonnes, carbonSaved, rows, totalVcpus, totalRam, totalStorage, totalEgress };
+}
+
+// ─── Export ───
+function exportCSV() {
+  if (!window._lastResults) return;
+  const r = window._lastResults;
+  let csv = 'Category,' + r.provider + ',On-Premises,Difference\n';
+  r.rows.forEach(([cat, cloud, onprem]) => {
+    csv += `"${cat.replace(/\*\*/g,'')}",${cloud.toFixed(0)},${onprem.toFixed(0)},${(cloud-onprem).toFixed(0)}\n`;
+  });
+  csv += `\nCarbon (tonnes CO2e/yr),${r.cloudCarbonTonnes.toFixed(2)},${r.onpremCarbonTonnes.toFixed(2)},${r.carbonSaved.toFixed(2)}\n`;
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `repatriation-assessment-${r.provider.toLowerCase()}.csv`;
+  a.click();
+}
+
+function exportPDF() {
+  window.print();
+}
+
+// Print styles
+const printStyle = document.createElement('style');
+printStyle.textContent = `@media print { body { background: white; color: black; } .card, .chart-box, .metric-card, .assumptions { background: #f5f5f5; border-color: #ddd; } .btn-calculate, .btn-add, .btn-remove, .btn-export, .provider-tabs, footer { display: none; } }`;
+document.head.appendChild(printStyle);
+</script>
+</body>
+</html>
